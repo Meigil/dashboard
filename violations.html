@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Uniform Violations</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h2>UNISCAN</h2>
+    <ul>
+      <li onclick="location.href='index.html'"> Dashboard</li>
+      <li onclick="location.href='capture.html'"> Face Capture</li>
+      <li onclick="location.href='records.html'"> Student Records</li>
+      <li class="active"> Violations</li>
+      <li onclick="location.href='guidance.html'"> Guidance</li>
+      <li> Admin </li>
+
+      <li class="logout" onclick="logout()"> Log Out</li>
+    </ul>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <h1>Uniform Violations</h1>
+    <p class="subtitle">Automatically detected uniform violations</p>
+
+    <!-- FILTER -->
+    <select class="filter">
+      <option>All Violations</option>
+      <option>Incomplete Uniform</option>
+      <option>Covered Uniform</option>
+      <option>No Uniform</option>
+    </select>
+
+    <!-- TABLE -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Photo</th>
+            <th>Student ID</th>
+            <th>Name</th>
+            <th>Violation Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>2025-03-10 07:25 AM</td>
+            <td><img src="https://via.placeholder.com/40"></td>
+            <td>2023-0182</td>
+            <td>Maria Santos</td>
+            <td>Incomplete Uniform</td>
+            <td class="pending">Pending</td>
+          </tr>
+
+          <tr>
+            <td>2025-03-11 07:18 AM</td>
+            <td><img src="https://via.placeholder.com/40"></td>
+            <td>2023-0182</td>
+            <td>Maria Santos</td>
+            <td>Covered by Jacket</td>
+            <td class="flagged">Flagged (3 Violations)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function logout() {
+      if (confirm("Are you sure you want to log out?")) {
+        location.href = "login.html";
+      }
+    }
+  </script>
+
+</body>
+</html>
+

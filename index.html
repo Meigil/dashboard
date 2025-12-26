@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Uniform Detection Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<script>
+  function logout() {
+    if (confirm("Are you sure you want to log out?")) {
+      location.href = "login.html";
+    }
+  }
+</script>
+
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h2>UNISCAN</h2>
+   <ul>
+  <li class="active" onclick="location.href='index.html'"> Dashboard</li>
+  <li onclick="location.href='capture.html'"> Face Capture</li>
+  <li onclick="location.href='records.html'"> Student Records</li>
+  <li onclick="location.href='violations.html'"> Violations</li>
+  <li onclick="location.href='guidance.html'"> Guidance</li>
+  <li> Admin </li>
+
+  <li class="logout" onclick="logout()"> Log Out</li>
+</ul>
+
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <h1>School Uniform Detection System</h1>
+    <p class="subtitle">Real-Time AI Uniform & Facial Recognition Analytics</p>
+
+    <!-- ANALYTICS CARDS -->
+    <div class="cards">
+      <div class="card purple">
+        <p class="label">Total Students Scanned</p>
+        <h2>1,248</h2>
+      </div>
+
+      <div class="card red">
+        <p class="label">Uniform Violations</p>
+        <h2>137</h2>
+      </div>
+
+      <div class="card green">
+        <p class="label">Proper Uniform Rate</p>
+        <h2>89%</h2>
+      </div>
+
+      <div class="card orange">
+        <p class="label">Guidance Required</p>
+        <h2>24</h2>
+      </div>
+    </div>
+
+    <!-- STATUS SECTION -->
+    <div class="status-section">
+      <div class="status-box">
+        <h3>Latest Detection</h3>
+        <p><strong>Student:</strong> Elyza Diane Pascua</p>
+        <p><strong>Student ID:</strong> 2019-1238</p>
+        <p><strong>Uniform Status:</strong>  Incomplete Uniform</p>
+        <p><strong>Violation Type:</strong> Jacket Covering Uniform</p>
+        <p><strong>Time:</strong> 7:32 AM</p>
+      </div>
+
+      <div class="status-box">
+        <h3>System Modules</h3>
+        <ul>
+          <li> Uniform Detection</li>
+          <li> Facial Recognition</li>
+          <li> Attendance & Logging</li>
+          <li> Guidance Recommendation</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts">
+      <div class="chart-box">
+        <h3>Uniform Compliance Over Time</h3>
+        <canvas id="complianceChart"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3>Uniform Violation Types</h3>
+        <canvas id="violationChart"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3>Attendance vs Violations</h3>
+        <canvas id="attendanceChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+      <!-- LIVE UNIFORM DETECTION -->
+    <div class="live-detection">
+      <h2>Live Uniform Detection</h2>
+
+      <div class="detection-container">
+
+        <!-- CAMERA MOCKUP -->
+        <div class="camera-box">
+          <div class="camera-feed">
+            📷 Live Camera Feed
+          </div>
+          <p class="camera-status">
+            Status: <span class="violation"> Incomplete Uniform</span>
+          </p>
+        </div>
+
+        <!-- DETECTION DETAILS -->
+        <div class="detection-info">
+          <h3>Detection Result</h3>
+          <p><strong>Student Name:</strong> Maria Santos</p>
+          <p><strong>Student ID:</strong> 2023-0145</p>
+          <p><strong>Uniform Status:</strong> Incomplete</p>
+          <p><strong>Violation Type:</strong> No ID </p>
+          <p><strong>Face Match:</strong> 96%</p>
+          <p><strong>Time:</strong> 7:41 AM</p>
+        </div>
+
+      </div>
+    </div>
+
+        <!-- STUDENT VIOLATION RECORDS -->
+    <div class="records">
+      <h2>Student Violation & Attendance Records</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>ID</th>
+            <th>Uniform Status</th>
+            <th>Violation Count</th>
+            <th>Recommendation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Juan Dela Cruz</td>
+            <td>2023-0012</td>
+            <td> Jacket Covering Uniform</td>
+            <td>3</td>
+            <td class="guide">Guidance Required</td>
+          </tr>
+          <tr>
+            <td>Maria Santos</td>
+            <td>2023-0145</td>
+            <td> No ID </td>
+            <td>2</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>Carlo Reyes</td>
+            <td>2023-0321</td>
+            <td> Proper Uniform</td>
+            <td>0</td>
+            <td>-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
