@@ -166,13 +166,14 @@ h1 {
 
 .camera-feed {
   width: 100%;
-  height: 280px;
+  height:  50px;
   background: #2d2b6f;
   border-radius: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  
 }
 
 
@@ -320,6 +321,7 @@ tbody tr:hover {
   background: #1c1b3a;
   padding: 20px;
   border-radius: 15px;
+  color: white;
 }
 
 .student-form h3 {
@@ -332,25 +334,41 @@ tbody tr:hover {
   font-size: 14px;
 }
 
-.student-form input {
+.student-form input, 
+.student-form select {
   width: 100%;
   padding: 10px;
   margin-top: 5px;
   border-radius: 8px;
   border: none;
+  background: white; 
+  color: black;      
+  font-size: 14px;
 }
 
+
+.student-form optgroup {
+  font-weight: bold;
+  color: #333;
+  background: #f0f0f0;
+}
 .image-preview {
-  height: 120px;
+  height: 500px;
   margin-top: 8px;
   border-radius: 10px;
   background: #2d2b6f;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.7;
+  opacity: 1;
+  overflow: hidden;
+  border: 2px solid #333;
 }
-
+.image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; 
+}
 .save-btn {
   width: 100%;
   margin-top: 20px;
@@ -451,4 +469,417 @@ table img {
   gap: 20px;
 }
 
+
+#video {
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  object-fit: cover; 
+  background: #000;
+}
+
+
+.camera-feed {
+  width: 100%;
+  height: 500px;
+  background: #000; 
+  border-radius: 15px;
+  overflow: hidden; 
+  display: block; 
+}
+
+
+.students-page {
+  background: transparent;
+}
+
+.students-page h1 {
+  margin-bottom: 5px;
+}
+
+.students-page .subtitle {
+  opacity: 0.8;
+  margin-bottom: 25px;
+}
+
+.students-page .search-box {
+  background: #1c1b3a;
+  color: white;
+}
+
+.students-page .search-box::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+.delete-btn, .edit-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+.delete-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.delete-btn:hover {
+  opacity: 0.8;
+}
+
+.edit-btn {
+  background: #3498db;
+  color: white;
+}
+
+.edit-btn:hover {
+  opacity: 0.8;
+}
+
+.modal {
+  display: none; 
+  position: fixed; 
+  z-index: 2000; 
+  padding-top: 50px; 
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  background-color: rgba(0,0,0,0.9); 
+}
+
+.modal-content {
+  margin: auto;
+  display: block;
+  width: auto;
+  max-width: 80%;
+  max-height: 80vh;
+  border-radius: 10px;
+  border: 3px solid #2d2b6f;
+}
+
+.close {
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  color: #f1f1f1;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#caption {
+  text-align: center;
+  color: #ccc;
+  padding: 10px;
+  font-size: 20px;
+}
+.camera-feed {
+  position: relative; 
+  width: 100%;
+  height: 500px;
+  background: #000;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+#video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; 
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #0f0c29, #302b63);
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: #0f0e2a;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  padding: 12px 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.sidebar li:hover,
+.sidebar .active {
+  background: #2d2b6f;
+  opacity: 1;
+}
+
+.logout {
+  margin-top: 30px;
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+
+.main-content {
+  margin-left: 260px; 
+  padding: 25px;
+}
+
+h1 { margin-bottom: 5px; }
+.subtitle { opacity: 0.8; margin-bottom: 25px; }
+
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+.purple { background: linear-gradient(135deg, #7f00ff, #b721ff); }
+.red { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
+.green { background: linear-gradient(135deg, #00b09b, #96c93d); }
+.orange { background: linear-gradient(135deg, #ff9966, #ff5e62); }
+
+.status-section, .charts {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.status-box, .chart-box {
+  background: #1c1b3a;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+
+.live-detection {
+  margin-top: 40px;
+}
+
+.detection-container {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+}
+
+.camera-box, .detection-info {
+  background: #1c1b3a;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+
+.camera-feed {
+  position: relative; 
+  width: 100%;
+  height: 500px;
+  background: #000;
+  border-radius: 15px;
+  overflow: hidden;
+  display: block;
+}
+
+#video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  display: block;
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; 
+}
+
+.violation { color: #ff4b5c; font-weight: bold; }
+.ok { color: #2ecc71; font-weight: bold; }
+
+.records { margin-top: 40px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1c1b3a;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+th, td { padding: 15px; text-align: left; }
+thead { background: #2d2b6f; }
+tbody tr { border-bottom: 1px solid #333; }
+tbody tr:hover { background: rgba(255,255,255,0.05); }
+
+.capture-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.student-form {
+  background: #1c1b3a;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+.student-form input, .student-form select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: none;
+  background: white;
+  color: black;
+}
+
+.image-preview {
+  height: 500px;
+  border-radius: 10px;
+  background: #2d2b6f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid #333;
+}
+
+.save-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00b09b, #96c93d);
+  color: white;
+  cursor: pointer;
+  border: none;
+  margin-top: 20px;
+}
+.year-title {
+  margin-left: 15px;
+  color: #555;
+  font-size: 15px;
+}
+
+.student-photo {
+  width: 45px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-btn, .delete-btn {
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.delete-btn { background:#dc2626; color:white; }
+.edit-btn { background:#2563eb; color:white; }
+
+.filter-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  max-width: 600px;
+}
+
+.filter-row select {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #1c1b3a;
+  color: white;
+  font-size: 14px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+.cards .card.purple { background: linear-gradient(135deg, #7f00ff, #b721ff); }
+.cards .card.red    { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
+.cards .card.green  { background: linear-gradient(135deg, #00b09b, #96c93d); }
+.cards .card.orange { background: linear-gradient(135deg, #ff9966, #ff5e62); }
+
+
+.search-box {
+  width: 100%;
+  max-width: 400px;
+  padding: 8px 12px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: white; 
+  color: rgb(255, 255, 255);           
+  font-size: 16px;
+}
+
+
+.filters-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filters-container label {
+  margin-top: 0;
+  display: block;
+}
+
+.filters-container select {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
 

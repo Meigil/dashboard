@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Students</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+
+<script>
+  function logout() {
+    if (confirm("Are you sure you want to log out?")) {
+      location.href = "login.html";
+    }
+  }
+</script>
+
+<div class="sidebar">
+  <h2>UNISCAN</h2>
+  <ul>
+    <li onclick="location.href='index.html'"> Dashboard</li>
+    <li onclick="location.href='capture.html'"> Face Capture</li>
+    <li class="active" onclick="location.href='students.html'"> Students</li>
+    <li onclick="location.href='records.html'"> Student Records</li>
+    <li onclick="location.href='violations.html'"> Violations</li>
+    <li onclick="location.href='guidance.html'"> Guidance</li>
+    <li> Admin </li>
+    <li class="logout" onclick="logout()"> Log Out</li>
+  </ul>
+</div>
+
+<div class="main-content students-page">
+  <h1>Students</h1>
+  <p class="subtitle">Students grouped by program</p>
+  <input
+    type="text"
+    class="search-box"
+    placeholder="Search students or student ID..."
+    onkeyup="searchStudents()"
+  >
+
+  <div class="filters-container">
+    <div class="filter-group">
+      <label>Select Program</label>
+      <select class="filter" id="programFilter" onchange="filterByProgram()">
+        <option value="all">All Programs</option>
+        <optgroup label="Senior High School">
+          <option value="ABM">Accountancy, Business, and Management (ABM)</option>
+          <option value="HUMSS">Humanities and Social Sciences (HUMSS)</option>
+          <option value="IT-MAWD">IT in Mobile App and Web Development (IT-MAWD)</option>
+          <option value="CCT">Computer and Communications Technology (CCT)</option>
+          <option value="TOPER">Tourism Operations (TOPER)</option>
+          <option value="CULART">Culinary Arts (CULART)</option>
+        </optgroup>
+        <optgroup label="Tertiary Programs">
+          <option value="BSCS">Bachelor of Science in Computer Science (BSCS)</option>
+          <option value="BSIT">Bachelor of Science in Information Technology (BSIT)</option>
+          <option value="BSBA">Bachelor of Science in Business Administration (BSBA)</option>
+          <option value="BSAIS">Bachelor of Science in Accounting Information System (BSAIS)</option>
+          <option value="BSA">Bachelor of Science in Accountancy (BSA)</option>
+          <option value="BSHM">Bachelor of Science in Hospitalilty Management (BSHM)</option>
+          <option value="BACOMM">Bachelor of Arts in Communication (BACOMM)</option>
+          <option value="BMMA">Bachelor of Multimedia Arts (BMMA)</option>
+          <option value="BSTM">Bachelor of Science in Tourism Management (BSTM)</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Select Grade / Year</label>
+      <select class="filter" id="yearFilter" onchange="filterByProgram()">
+        <option value="all">All Levels</option>
+        <optgroup label="Senior High School">
+          <option value="Grade 11">Grade 11</option>
+          <option value="Grade 12">Grade 12</option>
+        </optgroup>
+        <optgroup label="College">
+          <option value="1st Year">1st Year</option>
+          <option value="2nd Year">2nd Year</option>
+          <option value="3rd Year">3rd Year</option>
+          <option value="4th Year">4th Year</option>
+        </optgroup>
+      </select>
+    </div>
+  </div>
+
+  <div id="studentsWrapper"></div>
+
+  <div id="noStudentsMessage" style="display:none; text-align:center; margin-top:30px; color:#777;">
+    <h3>No students enrolled</h3>
+  </div>
+
+  <div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="imgFull">
+    <div id="caption"></div>
+  </div>
+
+</div>
+
+<script type="module" src="students.js"></script>
+
+</body>
+</html>
