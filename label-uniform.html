@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Label Uniform</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="main-content">
+  <h1>Label Uniform Parts</h1>
+  
+  <label>Choose Label</label>
+  <select id="labelSelect" class="dropdown-style">
+    <option value="">Select Label</option>
+    <option value="blouse">Blouse</option>
+    <option value="pants">Pants</option>
+    <option value="id">ID</option>
+    <option value="shoes">Shoes</option>
+  </select>
+
+  <canvas id="labelCanvas" style="border:1px solid #ccc; width:100%; margin-top:10px;"></canvas>
+  <button class="save-btn" onclick="saveUniform()">Save Uniform</button>
+</div>
+
+<script type="module" src="label-uniform.js"></script>
+</body>
+</html>

@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBmVP7R5XnvqobdxiRv-LpHswhCCVRggX4",
+  apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
   authDomain: "thesissystem-921ef.firebaseapp.com",
   projectId: "thesissystem-921ef",
   storageBucket: "thesissystem-921ef.firebasestorage.app",
@@ -12,169 +12,106 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const video = document.getElementById('video');
-let faceMatcher;
 
-const studentInfoMap = {};
-let totalStudents = 0;
+let attendanceChartInstance;
 
-Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri('./models'),
-  faceapi.nets.faceLandmark68Net.loadFromUri('./models'),
-  faceapi.nets.faceRecognitionNet.loadFromUri('./models'),
-  faceapi.nets.ssdMobilenetv1.loadFromUri('./models')
-]).then(async () => {
-  console.log("AI Models Ready");
-  faceMatcher = await loadLabeledImagesFromFirestore();
-  startVideo();
-});
-
-function startVideo() {
-  navigator.mediaDevices.getUserMedia({ video: {} })
-    .then(stream => video.srcObject = stream)
-    .catch(err => console.error("Camera Error:", err));
-}
-
-async function loadLabeledImagesFromFirestore() {
-  const querySnapshot = await getDocs(collection(db, "students"));
-  const labeledDescriptors = [];
-
-  querySnapshot.docs.forEach(docSnap => {
-    const data = docSnap.data();
-    studentInfoMap[data.fullName] = data;
-    totalStudents++;
-  });
-
-  document.getElementById('totalScanned').innerText = totalStudents;
-
-  for (const docSnap of querySnapshot.docs) {
-    const data = docSnap.data();
-    try {
-      const img = await faceapi.fetchImage(data.imageBase64);
-      const detection = await faceapi.detectSingleFace(img)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-      if (detection) {
-        labeledDescriptors.push(
-          new faceapi.LabeledFaceDescriptors(data.fullName, [detection.descriptor])
-        );
-      }
-    } catch (e) { console.error("Error loading:", data.fullName); }
-  }
-
-  return new faceapi.FaceMatcher(labeledDescriptors, 0.6);
-}
-
-video.addEventListener('play', () => {
-  const canvas = document.getElementById('overlay');
-  const displaySize = { width: video.clientWidth, height: video.clientHeight };
-  faceapi.matchDimensions(canvas, displaySize);
-
-  setInterval(async () => {
-    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks()
-      .withFaceDescriptors();
-
-    const resized = faceapi.resizeResults(detections, displaySize);
-    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-
-    if (faceMatcher && resized.length > 0) {
-      const results = resized.map(d => faceMatcher.findBestMatch(d.descriptor));
-
-      results.forEach((result, i) => {
-        const box = resized[i].detection.box;
-        new faceapi.draw.DrawBox(box, { label: result.toString() }).draw(canvas);
-
-        if (result.label !== "unknown") {
-          const student = studentInfoMap[result.label];
-
-          document.getElementById('resName').innerHTML = `<strong>Student Name:</strong> ${result.label}`;
-          document.getElementById('resId').innerHTML = `<strong>Student ID:</strong> ${student?.studentId || '---'}`;
-          document.getElementById('resStatus').innerHTML = `<strong>Uniform Status:</strong> ${student?.uniformStatus || '---'}`;
-          document.getElementById('resViolation').innerHTML = `<strong>Violation Type:</strong> ${student?.violationType || '---'}`;
-          document.getElementById('resMatch').innerHTML = `<strong>Face Match:</strong> ${Math.round((1-result.distance)*100)}%`;
-          document.getElementById('resTime').innerText = new Date().toLocaleTimeString();
-
-          document.getElementById('latestName').innerHTML = `<strong>Student:</strong> ${result.label}`;
-          document.getElementById('latestId').innerHTML = `<strong>Student ID:</strong> ${student?.studentId || '---'}`;
-          document.getElementById('latestUniform').innerHTML = `<strong>Uniform Status:</strong> ${student?.uniformStatus || '---'}`;
-          document.getElementById('latestViolation').innerHTML = `<strong>Violation Type:</strong> ${student?.violationType || '---'}`;
-          document.getElementById('latestTime').innerText = new Date().toLocaleTimeString();
-
-          document.getElementById('detectionStatus').innerText = "Identified";
-          document.getElementById('detectionStatus').style.color = "#2ecc71";
-
-        } else {
-          document.getElementById('resName').innerHTML = `<strong>Student Name:</strong> Unknown`;
-          document.getElementById('resId').innerHTML = `<strong>Student ID:</strong> ---`;
-          document.getElementById('resStatus').innerHTML = `<strong>Uniform Status:</strong> ---`;
-          document.getElementById('resViolation').innerHTML = `<strong>Violation Type:</strong> ---`;
-          document.getElementById('resMatch').innerHTML = `<strong>Face Match:</strong> Low`;
-          document.getElementById('detectionStatus').innerText = "Unknown Face";
-          document.getElementById('detectionStatus').style.color = "#f1c40f";
-        }
-      });
-    } else {
-      document.getElementById('detectionStatus').innerText = "Scanning...";
-      document.getElementById('detectionStatus').style.color = "#ff4b5c";
+function getWeekDates() {
+    const curr = new Date();
+    const week = [];
+    const first = curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1);
+    for (let i = 0; i < 5; i++) {
+        const day = new Date(new Date().setDate(first + i));
+        week.push(day.toLocaleDateString());
     }
-  }, 200);
+    return week;
+}
+
+const attendanceQuery = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
+
+onSnapshot(attendanceQuery, (snapshot) => {
+    const allRecords = snapshot.docs.map(doc => doc.data());
+    const todayStr = new Date().toLocaleDateString();
+
+    const todayRecords = allRecords.filter(record => 
+        record.dateString === todayStr && 
+        record.studentName.toLowerCase() !== "unknown"
+    );
+
+    if (document.getElementById('totalScanned')) {
+        document.getElementById('totalScanned').innerText = todayRecords.length;
+    }
+
+    const latestValidRecord = allRecords.find(record => 
+        record.studentName.toLowerCase() !== "unknown"
+    );
+
+    if (latestValidRecord) {
+        if(document.getElementById('latestName')) document.getElementById('latestName').innerHTML = `<strong>Student:</strong> ${latestValidRecord.studentName}`;
+        if(document.getElementById('latestId')) document.getElementById('latestId').innerHTML = `<strong>Student ID:</strong> ${latestValidRecord.studentId || '---'}`;
+        if(document.getElementById('latestProgram')) document.getElementById('latestProgram').innerHTML = `<strong>Program / Year:</strong> ${latestValidRecord.programLevel || '---'}`;
+if(document.getElementById('latestUniform')) document.getElementById('latestUniform').innerHTML = `<strong>Uniform Status:</strong> ${ (latestValidRecord.status === 'Present' || latestValidRecord.status === 'Proper Uniform') ? 'Scanning...' : (latestValidRecord.status || 'Scanning...') }`;
+        if(document.getElementById('latestTime')) document.getElementById('latestTime').innerText = latestValidRecord.timeString;
+    }
+
+    updateDashboardCharts(allRecords);
 });
 
+function updateDashboardCharts(records) {
+    const weekDates = getWeekDates();
+    const attendanceData = [0, 0, 0, 0, 0];
+
+    records.forEach(record => {
+        if (record.studentName.toLowerCase() !== "unknown") {
+            const dateIdx = weekDates.indexOf(record.dateString);
+            if (dateIdx !== -1) {
+                attendanceData[dateIdx]++;
+            }
+        }
+    });
+
+    const ctx = document.getElementById('attendanceChart');
+    if (!ctx) return;
+
+    if (attendanceChartInstance) {
+        attendanceChartInstance.data.datasets[0].data = attendanceData;
+        attendanceChartInstance.update();
+    } else {
+        attendanceChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                datasets: [{
+                    data: attendanceData,
+                    backgroundColor: '#3498db', 
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false } 
+                },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    }
+}
 
 new Chart(document.getElementById('complianceChart'), {
   type: 'line',
   data: {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
     datasets: [
-      {
-        label: 'Proper Uniform',
-        data: [220, 240, 260, 280, 300],
-        borderWidth: 3,
-        tension: 0.4
-      },
-      {
-        label: 'Violations',
-        data: [45, 38, 30, 25, 20],
-        borderWidth: 3,
-        tension: 0.4
-      }
+      { label: 'Proper Uniform', data: [220, 240, 260, 280, 300], borderWidth: 3, tension: 0.4 },
+      { label: 'Violations', data: [45, 38, 30, 25, 20], borderWidth: 3, tension: 0.4 }
     ]
   }
 });
-
 
 new Chart(document.getElementById('violationChart'), {
   type: 'bar',
   data: {
-    labels: [
-      'Incomplete Uniform',
-      'No ID ',
-      'Jacket / Hoodie',
-      'Wrong Uniform'
-    ],
-    datasets: [{
-      label: 'Number of Violations',
-      data: [60, 35, 25, 17]
-    }]
+    labels: ['Incomplete Uniform', 'No ID ', 'Jacket / Hoodie', 'Wrong Uniform'],
+    datasets: [{ label: 'Number of Violations', data: [60, 35, 25, 17] }]
   }
 });
-
-
-new Chart(document.getElementById('attendanceChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-    datasets: [
-      {
-        label: 'Attendance',
-        data: [320, 330, 340, 350, 360]
-      },
-      {
-        label: 'Violations',
-        data: [45, 38, 30, 25, 20]
-      }
-    ]
-  }
-});
-

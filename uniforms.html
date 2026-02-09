@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Saved Uniforms</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script>
+function logout() {
+  if (confirm("Are you sure you want to log out?")) {
+    location.href = "login.html";
+  }
+}
+</script>
+
+<div class="sidebar"></div>
+</div>
+
+<div class="main-content">
+  <h1>Saved Uniforms</h1>
+  <p class="subtitle">All uploaded or captured uniform images per program</p>
+
+  <div class="filter-row">
+    <select id="programFilter">
+      <option value="">All Programs</option>
+      <optgroup label="Senior High School">
+        <option value="ABM">ABM</option>
+        <option value="HUMSS">HUMSS</option>
+        <option value="IT-MAWD">IT-MAWD</option>
+        <option value="CCT">CCT</option>
+        <option value="TOPER">TOPER</option>
+        <option value="CULART">CULART</option>
+      </optgroup>
+      <optgroup label="Tertiary Programs">
+        <option value="BSCS">BSCS</option>
+        <option value="BSIT">BSIT</option>
+        <option value="BSBA">BSBA</option>
+        <option value="BSAIS">BSAIS</option>
+        <option value="BSA">BSA</option>
+        <option value="BSHM">BSHM</option>
+        <option value="BACOMM">BACOMM</option>
+        <option value="BMMA">BMMA</option>
+        <option value="BSTM">BSTM</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <div class="cards" id="uniformCards">
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBmVP7R5XnvqobdxiRv-LpHswhCCVRggX4",
+  authDomain: "thesissystem-921ef.firebaseapp.com",
+  projectId: "thesissystem-921ef",
+  storageBucket: "thesissystem-921ef.appspot.com",
+  messagingSenderId: "62118219774",
+  appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const uniformCards = document.getElementById("uniformCards");
+const programFilter = document.getElementById("programFilter");
+
+async function loadUniforms() {
+  uniformCards.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "uniforms"));
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const program = data.program || "Unknown";
+
+    const card = document.createElement("div");
+    card.classList.add("card", "green"); 
+    card.dataset.program = program;
+
+    card.innerHTML = `
+      <h3>${program}</h3>
+      <img src="${data.imageBase64}" alt="${program} uniform" style="width:100%; border-radius:10px;">
+    `;
+
+    uniformCards.appendChild(card);
+  });
+}
+
+programFilter.addEventListener("change", () => {
+  const selected = programFilter.value;
+  document.querySelectorAll("#uniformCards .card").forEach(card => {
+    if (!selected || card.dataset.program === selected) {
+      card.style.display = "block";
+    } else {
+      card.style.display = "none";
+    }
+  });
+});
+
+loadUniforms();
+</script>
+<script src="sidebar.js"></script>
+</body>
+</html>

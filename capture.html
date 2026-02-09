@@ -2,46 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Student Face Capture</title>
+  <title>Batch Student Enrollment</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  
+  <style>
+    .batch-enrollment {
+      margin-top: 40px;
+      padding: 25px;
+      border: 1px solid #e2e8f0;
+      border-radius: 15px;
+      background-color: #ffffff;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .batch-enrollment h3 { color: #2d3748; margin-bottom: 15px; font-weight: bold; }
+    .status-msg { 
+      padding: 12px; 
+      margin: 15px 0; 
+      font-weight: bold; 
+      color: #2980b9; 
+      background: #ebf8ff; 
+      border-left: 4px solid #2980b9;
+      border-radius: 4px;
+    }
+    .file-input-group { margin-bottom: 20px; }
+    .file-input-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #4a5568; font-size: 0.9rem; }
+
+
+    .file-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .file-item {
+      background-color: #5bc0de;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      animation: fadeIn 0.3s ease;
+    }
+    .file-status { font-weight: bold; font-size: 0.75rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
 <body>
-
-  <script>
-    function logout() {
-      if (confirm("Are you sure you want to log out?")) {
-        location.href = "login.html";
-      }
-    }
-  </script>
-
-
-  <div class="sidebar">
-    <h2>UNISCAN</h2>
-    <ul>
-      <li onclick="location.href='index.html'"> Dashboard</li>
-      <li class="active" onclick="location.href='capture.html'"> Face Capture</li>
-      <li onclick="location.href='students.html'"> Students</li>
-      <li onclick="location.href='records.html'"> Student Records</li>
-      <li onclick="location.href='violations.html'"> Violations</li>
-      <li onclick="location.href='guidance.html'"> Guidance</li>
-      <li> Admin </li>
-      <li class="logout" onclick="logout()"> Log Out</li>
-    </ul>
-  </div>
-
   
 
-  <div class="main-content">
+  <div class="sidebar"></div>
 
+  <div class="main-content">
     <h1>Student Identity Enrollment</h1>
-    <p class="subtitle">
-      Capture student face image for facial recognition verification
-    </p>
+    <p class="subtitle">Enroll student profiles manually or through batch file upload.</p>
 
     <div class="capture-container">
-
-
       <div class="camera-box">
         <div class="camera-feed">
           <video id="video" autoplay playsinline></video>
@@ -50,79 +64,89 @@
         <button class="capture-btn" onclick="captureImage()">Capture Image</button>
       </div>
 
+      <div class="student-form">
+        <h3>Single Enrollment</h3>
 
-        <div class="student-form">
-  <h3>Student Information</h3>
+        <label for="studentId">Student ID</label>
+        <input type="text" id="studentId" placeholder="Enter ID number">
 
-  <label for="studentId">Student ID</label>
-  <input type="text" id="studentId" placeholder="">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" placeholder="Enter full name">
 
-  <label for="fullName">Full Name</label>
-  <input type="text" id="fullName" placeholder="">
+        <label for="course">Program / Course</label>
+        <select id="course" class="dropdown-style">
+          <option value="">Select Program</option>
+          <optgroup label="Senior High School">
+            <option value="ABM">Accountancy, Business, and Management (ABM)</option>
+            <option value="HUMSS">Humanities and Social Sciences (HUMSS)</option>
+            <option value="IT-MAWD">IT in Mobile App and Web Development (IT-MAWD)</option>
+            <option value="CCT">Computer and Communications Technology (CCT)</option>
+            <option value="TOPER">Tourism Operations (TOPER)</option>
+            <option value="CULART">Culinary Arts (CULART)</option>
+          </optgroup>
+          <optgroup label="Tertiary Programs">
+            <option value="BSCS">Bachelor of Science in Computer Science (BSCS)</option>
+            <option value="BSIT">Bachelor of Science in Information Technology (BSIT)</option>
+            <option value="BSBA">Bachelor of Science in Business Administration (BSBA)</option>
+            <option value="BSAIS">Bachelor of Science in Accounting Information System (BSAIS)</option>
+            <option value="BSA">Bachelor of Science in Accountancy (BSA)</option>
+            <option value="BSHM">Bachelor of Science in Hospitalilty Management (BSHM)</option>
+            <option value="BACOMM">Bachelor of Arts in Communication (BACOMM)</option>
+            <option value="BMMA">Bachelor of Multimedia Arts (BMMA)</option>
+            <option value="BSTM">Bachelor of Science in Tourism Management (BSTM)</option>
+          </optgroup>
+        </select>
 
-  <label for="course">Program / Course</label>
-  <select id="course" class="dropdown-style">
-    <option value="">Select Program</option>
-    <optgroup label="Senior High School">
-      <option value="ABM">Accountancy, Business, and Management (ABM)</option>
-      <option value="HUMSS">Humanities and Social Sciences (HUMSS)</option>
-      <option value="IT-MAWD">IT in Mobile App and Web Development (IT-MAWD)</option>
-      <option value="CCT">Computer and Communications Technology (CCT)</option>
-      <option value="TOPER">Tourism Operations (TOPER)</option>
-      <option value="CULART">Culinary Arts (CULART)</option>
-    </optgroup>
-    <optgroup label="Tertiary Programs">
-      <option value="BSCS">Bachelor of Science in Computer Science (BSCS)</option>
-      <option value="BSIT">Bachelor of Science in Information Technology (BSIT)</option>
-      <option value="BSBA">Bachelor of Science in Business Administration (BSBA)</option>
-      <option value="BSAIS">Bachelor of Science in Accounting Information System (BSAIS)</option>
-      <option value="BSA">Bachelor of Science in Accountancy (BSA)</option>
-      <option value="BSHM">Bachelor of Science in Hospitalilty Management (BSHM)</option>
-      <option value="BACOMM">Bachelor of Arts in Communication (BACOMM)</option>
-      <option value="BMMA">Bachelor of Multimedia Arts (BMMA)</option>
-      <option value="BSTM">Bachelor of Science in Tourism Management (BSTM)</option>
-    </optgroup>
-  </select>
-<label for="yearLevel">Grade / Year Level</label>
-<select id="yearLevel" class="dropdown-style">
-  <option value="">Select Grade / Year</option>
+        <label for="yearLevel">Grade / Year Level</label>
+        <select id="yearLevel" class="dropdown-style">
+          <option value="">Select Grade / Year</option>
+          <optgroup label="Senior High School">
+            <option value="Grade 11">Grade 11</option>
+            <option value="Grade 12">Grade 12</option>
+          </optgroup>
+          <optgroup label="College">
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+          </optgroup>
+        </select>
 
-  <optgroup label="Senior High School">
-    <option value="Grade 11">Grade 11</option>
-    <option value="Grade 12">Grade 12</option>
-  </optgroup>
+        <label for="uploadImage">Upload Image</label>
+        <input type="file" id="uploadImage" accept="image/*">
 
-  <optgroup label="College">
-    <option value="1st Year">1st Year</option>
-    <option value="2nd Year">2nd Year</option>
-    <option value="3rd Year">3rd Year</option>
-    <option value="4th Year">4th Year</option>
-  </optgroup>
-</select>
+        <div class="image-preview" id="imagePreview">No image selected</div>
 
-  
-
-<label>Captured Image</label>
-
-<label for="uploadImage">Upload Image</label>
-<input type="file" id="uploadImage" accept="image/*">
-
-<div class="image-preview" id="imagePreview">
-  No image captured
-</div>
-
-
-        <button class="save-btn" onclick="saveStudent()">Save Student Profile</button>
+        <button class="save-btn" onclick="saveStudent()">Save Profile</button>
       </div>
-
     </div>
 
+    <div class="batch-enrollment">
+      <h3>Batch Enrollment (CSV + Student Photos)</h3>
+      <p style="font-size: 0.9rem; color: #718096; margin-bottom: 20px;">
+        Upload CSV list and all corresponding images. Image filenames must match Student IDs.
+      </p>
+      
+      <div class="file-input-group">
+        <label>1. Select CSV List:</label>
+        <input type="file" id="csvFile" accept=".csv">
+        <div id="csvList" class="file-list"></div>
+      </div>
+
+      <div class="file-input-group">
+        <label>2. Select Student Photos (Multiple Selection):</label>
+        <input type="file" id="imageFolder" accept="image/*" multiple>
+        <div id="imageList" class="file-list" style="max-height: 150px; overflow-y: auto;"></div>
+      </div>
+
+      <div id="bulkStatus" class="status-msg">Ready for upload.</div>
+      <button id="startBulkBtn" class="save-btn" style="background-color: #27ae60; width: 100%;">
+        Process Batch Enrollment
+      </button>
+    </div>
   </div>
 
-
-<script type="module" src="capture.js"></script>
-
-
-
+  <script src="sidebar.js"></script>
+  <script type="module" src="capture.js"></script>
 </body>
 </html>

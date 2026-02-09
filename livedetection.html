@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Face Detection</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="livedetection.css">
+</head>
+<body>
+
+  <div class="camera-feed" id="camerafaceuniform">
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="overlay"></canvas>
+  </div>
+
+  <div class="detection-info">
+    <h2>Detection Result</h2>
+    <p id="resName"><strong>Student Name:</strong> Scanning...</p>
+    <p id="resId"><strong>Student ID:</strong> ---</p>
+    
+    <p id="resProgram"><strong>Program / Year:</strong> ---</p>
+    
+    <p id="resStatus"><strong>Uniform Status:</strong> Scanning...</p>
+    <p id="resViolation"><strong>Violation Type:</strong> Scanning...</p>
+    <p><strong>Face Match:</strong> <span id="resMatch">0%</span></p>
+    <p><strong>Time:</strong> <span id="resTime">--:--</span></p>
+    
+    <p class="camera-status">
+      Status: <span id="detectionStatus" class="violation">Scanning...</span>
+    </p>
+  </div>
+
+  <button class="return-btn" onclick="location.href='index.html'">Return</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+  <script type="module" src="detection.js"></script>
+
+</body>
+</html>

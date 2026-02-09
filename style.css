@@ -881,5 +881,103 @@ tbody tr:hover { background: rgba(255,255,255,0.05); }
   border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 14px;
+}.uniform-capture-page .capture-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.uniform-capture-page .camera-box {
+  background: #1c1b3a;
+  padding: 20px;
+  border-radius: 15px;
+  position: relative;
+}
+
+.uniform-capture-page .camera-feed {
+  width: 100%;
+  height: 500px;
+  background: #000;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+}
+
+.uniform-capture-page #video,
+.uniform-capture-page #overlay {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.uniform-capture-page .capture-btn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.uniform-capture-page .student-form {
+  background: #1c1b3a;
+  padding: 20px;
+  border-radius: 15px;
+  color: white;
+}
+
+.uniform-capture-page .student-form label {
+  display: block;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.uniform-capture-page .student-form input, 
+.uniform-capture-page .student-form select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: none;
+  background: white;
+  color: black;
+  font-size: 14px;
+}
+
+.uniform-capture-page .image-preview {
+  height: 500px;
+  margin-top: 8px;
+  border-radius: 10px;
+  background: #2d2b6f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid #333;
+}
+
+.uniform-capture-page .image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.uniform-capture-page .save-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00b09b, #96c93d);
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
 }
 
