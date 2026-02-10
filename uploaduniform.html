@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uniform Settings | Admin</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.05) 0, transparent 50%);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex; 
+        }
+
+        .sidebar { min-width: 260px; }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 60px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 40px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group { margin-bottom: 30px; }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px 20px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        select:focus { border-color: #3b82f6; }
+
+        .drop-zone {
+            border: 2px dashed #475569;
+            border-radius: 16px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.5);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .drop-zone:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .drop-zone p { font-weight: 600; color: #3b82f6; }
+
+        .preview-container {
+            width: 100%;
+            height: 550px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #020617;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border-radius: 12px;
+            border: none;
+            background: #3b82f6;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-msg {
+            margin-top: 20px;
+            text-align: center;
+            color: #4ade80;
+            font-weight: 600;
+            display: none;
+            padding: 10px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar"></div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="header">
+                <h1>Upload Uniforms</h1>
+                <p class="subtitle">Update the official uniform reference for the system.</p>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="form-group">
+                        <label>Academic Program</label>
+                        <select id="programSelect">
+                            <option value="">Select Program</option>
+                            <optgroup label="Senior High School">
+                                <option value="ABM">ABM</option>
+                                <option value="HUMSS">HUMSS</option>
+                                <option value="IT-MAWD">IT-MAWD</option>
+                                <option value="CCT">CCT</option>
+                                <option value="TOPER">TOPER</option>
+                                <option value="CULART">CULART</option>
+                            </optgroup>
+                            <optgroup label="Tertiary Programs">
+                                <option value="BSCS">BSCS</option>
+                                <option value="BSIT">BSIT</option>
+                                <option value="BSBA">BSBA</option>
+                                <option value="BSAIS">BSAIS</option>
+                                <option value="BSA">BSA</option>
+                                <option value="BSHM">BSHM</option>
+                                <option value="BACOMM">BACOMM</option>
+                                <option value="BMMA">BMMA</option>
+                                <option value="BSTM">BSTM</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Upload Reference Photo</label>
+                        <div class="drop-zone" id="dropZone">
+                            <p>Click to select image</p>
+                            <span style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">JPG or PNG recommended</span>
+                            <input type="file" id="fileInput" hidden accept="image/*">
+                        </div>
+                    </div>
+
+                    <button class="btn" id="saveBtn">Save Changes</button>
+                    <div id="infoBox" class="status-msg">Uniform updated successfully!</div>
+                </div>
+
+                <div class="card">
+                    <label>Live Preview: <span id="selectedTitle" style="color:#3b82f6; text-transform: none;">None Selected</span></label>
+                    <div class="preview-container" style="margin-top: 15px;">
+                        <img id="mainPreview" src="https://via.placeholder.com/1000x800/020617/1e293b?text=Reference+Preview" class="preview-img">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="sidebar.js"></script>
+    <script type="module" src="uploaduniform.js"></script>
+</body>
+</html>
