@@ -13,7 +13,7 @@
     <canvas id="overlay"></canvas>
   </div>
 
-  <div class="detection-info">
+<div class="detection-info">
     <h2>Detection Result</h2>
     <p id="resName"><strong>Student Name:</strong> Scanning...</p>
     <p id="resId"><strong>Student ID:</strong> ---</p>
@@ -23,6 +23,7 @@
     <p id="resStatus"><strong>Uniform Status:</strong> Scanning...</p>
     <p id="resViolation"><strong>Violation Type:</strong> Scanning...</p>
     <p><strong>Face Match:</strong> <span id="resMatch">0%</span></p>
+    <p><strong>Date:</strong> <span id="resDate">--/--/----</span></p>
     <p><strong>Time:</strong> <span id="resTime">--:--</span></p>
 
     <p class="camera-status">
@@ -31,7 +32,7 @@
   </div>
 
   <button class="return-btn" onclick="location.href='index.html'">Return</button>
-
+<script src="https://cdn.roboflow.com/0.2.26/roboflow.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
   <script type="module" src="detection.js"></script>
 

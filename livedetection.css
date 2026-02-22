@@ -1,10 +1,10 @@
-/* 1. FULLSCREEN CAMERA SETUP */
+
 body, html {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden; /* Iwas scroll */
+  overflow: hidden; 
   background: #000;
 }
 
@@ -14,13 +14,13 @@ body, html {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 1; /* Pinaka-ilalim */
+  z-index: 1; 
 }
 
 #video {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Para saktong fullscreen kahit anong aspect ratio */
+  object-fit: cover; 
 }
 
 #overlay {
@@ -29,22 +29,22 @@ body, html {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 2; /* Nakapatong sa video para sa bounding boxes */
+  z-index: 2; 
 }
 
-/* 2. FLOATING DETECTION PANEL (Glassmorphism Style) */
+
 .detection-info {
   position: fixed;
   top: 30px;
-  right: 30px; /* Nakalutang sa upper right */
+  right: 30px; 
   width: 320px;
-  background: rgba(15, 14, 42, 0.85); /* Dark blue based sa theme mo na may transparency */
-  backdrop-filter: blur(10px); /* Glass effect */
+  background: rgba(15, 14, 42, 0.85); 
+  backdrop-filter: blur(10px); 
   padding: 25px;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-  z-index: 100; /* Siguradong nasa itaas */
+  z-index: 100; 
   color: white;
   font-family: Arial, sans-serif;
 }
@@ -52,7 +52,7 @@ body, html {
 .detection-info h2 {
   margin: 0 0 20px 0;
   font-size: 1.2rem;
-  color: #00c6ff; /* Cyan accent */
+  color: #00c6ff;
   text-transform: uppercase;
   letter-spacing: 1px;
   border-bottom: 1px solid rgba(255,255,255,0.1);
