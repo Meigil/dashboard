@@ -2,32 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Guidance Recommendations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guidance Recommendations | UNISCAN</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+ 
+    .search-container {
+      margin-bottom: 20px;
+      position: relative;
+      max-width: 400px;
+    }
+    .search-container input {
+      width: 100%;
+      padding: 12px 40px 12px 15px;
+      background: #1c1b3a;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: white;
+      outline: none;
+    }
+    .search-container i {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.5);
+    }
+
+    .guidance-badge {
+      background: #e74c3c;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+    .action-btn {
+      background: #2ecc71;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    .action-btn:hover {
+      background: #27ae60;
+      transform: scale(1.05);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: rgba(255,255,255,0.5);
+    }
+  </style>
 </head>
 <body>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <h2>UNISCAN</h2>
-    <ul>
-      <li onclick="location.href='index.html'"> Dashboard</li>
-      <li onclick="location.href='capture.html'"> Face Capture</li>
-      <li onclick="location.href='records.html'"> Student Records</li>
-      <li onclick="location.href='violations.html'"> Violations</li>
-      <li class="active"> Guidance</li>
-      <li> Admin </li>
+  <div class="sidebar"></div>
 
-      <li class="logout" onclick="logout()"> Log Out</li>
-    </ul>
-  </div>
-
-  <!-- MAIN CONTENT -->
   <div class="main-content">
     <h1>Guidance Recommendations</h1>
     <p class="subtitle">
-      Students recommended for guidance after 3 uniform violations
+      List of students with <strong>3 or more</strong> uniform violations requiring intervention.
     </p>
+
+    <div class="search-container">
+      <input type="text" id="studentSearch" placeholder="Search by Name or Student ID...">
+      <i class="fas fa-search"></i>
+    </div>
 
     <div class="table-container">
       <table>
@@ -35,29 +80,124 @@
           <tr>
             <th>Student ID</th>
             <th>Name</th>
-            <th>Course / Section</th>
+            <th>Program/Year</th>
             <th>Total Violations</th>
             <th>Recommendation</th>
-            <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
-
-        <tbody>
-          <tr>
-            <td>2023-0182</td>
-            <td>Maria Santos</td>
-            <td>BSHM - B</td>
-            <td class="violation">3</td>
-            <td>Guidance Counseling</td>
-            <td>
-              <button class="action-btn">Mark as Counseled</button>
-            </td>
-          </tr>
-        </tbody>
+        <tbody id="guidanceTableBody">
+          </tbody>
       </table>
+      <div id="noRecords" class="empty-state" style="display:none;">
+        <i class="fas fa-check-circle" style="font-size: 40px; margin-bottom: 10px;"></i>
+        <p id="emptyMessage">No students currently reached the 3-violation threshold.</p>
+      </div>
     </div>
-
   </div>
+
+  <script src="sidebar.js"></script>
+  
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
+        authDomain: "thesissystem-921ef.firebaseapp.com",
+        projectId: "thesissystem-921ef",
+        storageBucket: "thesissystem-921ef.appspot.com",
+        messagingSenderId: "62118219774",
+        appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let latestRecords = []; 
+
+    onSnapshot(collection(db, "attendance"), (snapshot) => {
+        latestRecords = snapshot.docs.map(doc => doc.data());
+        processGuidanceData(); 
+    });
+
+    document.getElementById('studentSearch').addEventListener('input', () => {
+        processGuidanceData();
+    });
+
+    function processGuidanceData() {
+        const tbody = document.getElementById("guidanceTableBody");
+        const noRecordsMsg = document.getElementById("noRecords");
+        const emptyMessage = document.getElementById("emptyMessage");
+        const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+        
+        tbody.innerHTML = "";
+
+        const studentStats = {};
+
+        latestRecords.forEach(rec => {
+
+            if (rec.status !== "Complete" && rec.studentId) {
+                if (!studentStats[rec.studentId]) {
+                    studentStats[rec.studentId] = {
+                        name: rec.studentName || "Unknown",
+                        program: rec.programLevel || "N/A",
+                        count: 0
+                    };
+                }
+                studentStats[rec.studentId].count++;
+            }
+        });
+
+        let hasViolators = false;
+        let visibleCount = 0;
+        
+        for (const id in studentStats) {
+            const student = studentStats[id];
+            
+            if (student.count >= 3) {
+                hasViolators = true;
+
+                const nameMatch = student.name.toLowerCase().includes(searchTerm);
+                const idMatch = id.toLowerCase().includes(searchTerm);
+
+                if (nameMatch || idMatch) {
+                    visibleCount++;
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td style="font-weight:bold; color:#00c6ff;">${id}</td>
+                        <td>${student.name}</td>
+                        <td>${student.program}</td>
+                        <td><span class="guidance-badge">${student.count} Violations</span></td>
+                        <td><i class="fas fa-user-shield"></i> Guidance Counseling</td>
+                        <td>
+                          <button class="action-btn" onclick="markCounseled('${id}')">
+                            Mark as Counseled
+                          </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            }
+        }
+
+        if (!hasViolators) {
+            noRecordsMsg.style.display = "block";
+            emptyMessage.innerText = "No students currently reached the 3-violation threshold.";
+        } else if (visibleCount === 0 && searchTerm !== "") {
+            noRecordsMsg.style.display = "block";
+            emptyMessage.innerText = `No results found for "${searchTerm}"`;
+        } else {
+            noRecordsMsg.style.display = "none";
+        }
+    }
+
+    window.markCounseled = (id) => {
+        if(confirm(`Confirm counseling for Student ID: ${id}?`)) {
+            alert("Record updated locally. Link this to a Firebase update function to make it permanent.");
+        }
+    };
+  </script>
 
   <script>
     function logout() {

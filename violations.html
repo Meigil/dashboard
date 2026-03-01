@@ -2,71 +2,170 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Uniform Violations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uniform Violations | UNISCAN</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+
+    .flagged-status {
+      background: #e74c3c;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+    .pending-status {
+      color: #f1c40f;
+      font-weight: bold;
+    }
+    .count-circle {
+      background: #2d2b6f;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 50%;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .img-proof {
+      width: 40px; height: 40px; object-fit: cover; border-radius: 5px; cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
-
 <div class="sidebar"></div>
 
-  <div class="main-content">
-    <h1>Uniform Violations</h1>
-    <p class="subtitle">Automatically detected uniform violations</p>
+<div class="main-content">
+  <h1>Uniform Violations</h1>
+  <p class="subtitle">Automatically detected uniform violations and repeat offenders</p>
 
-
-    <select class="filter">
-      <option>All Violations</option>
-      <option>Incomplete Uniform</option>
-      <option>Covered Uniform</option>
-      <option>No Uniform</option>
+  <div class="filter-box" style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <select class="dark-input" id="violationTypeFilter" style="max-width: 250px;">
+      <option value="">All Violation Types</option>
+      <option value="Incomplete Uniform">Incomplete Uniform</option>
+      <option value="Covered by Jacket">Covered by Jacket</option>
+      <option value="No Uniform">No Uniform</option>
     </select>
-
-
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Date & Time</th>
-            <th>Photo</th>
-            <th>Student ID</th>
-            <th>Name</th>
-            <th>Violation Type</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr>
-            <td>2025-03-10 07:25 AM</td>
-            <td><img src="https://via.placeholder.com/40"></td>
-            <td>2023-0182</td>
-            <td>Maria Santos</td>
-            <td>Incomplete Uniform</td>
-            <td class="pending">Pending</td>
-          </tr>
-
-          <tr>
-            <td>2025-03-11 07:18 AM</td>
-            <td><img src="https://via.placeholder.com/40"></td>
-            <td>2023-0182</td>
-            <td>Maria Santos</td>
-            <td>Covered by Jacket</td>
-            <td class="flagged">Flagged (3 Violations)</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <input type="text" id="studentSearch" class="dark-input" placeholder="Search Student ID or Name..." style="max-width: 300px;">
   </div>
 
-  <script>
-    function logout() {
-      if (confirm("Are you sure you want to log out?")) {
-        location.href = "login.html";
-      }
-    }
-  </script>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>Photo</th>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Violation Type</th>
+          <th>Total Records</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="violationTableBody">
+        </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="imageModal" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center;" onclick="this.style.display='none'">
+    <img id="modalImg" src="" style="max-width:90%; max-height:80%; border: 3px solid #00c6ff; border-radius: 10px;">
+</div>
+
 <script src="sidebar.js"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
+        authDomain: "thesissystem-921ef.firebaseapp.com",
+        projectId: "thesissystem-921ef",
+        storageBucket: "thesissystem-921ef.appspot.com",
+        messagingSenderId: "62118219774",
+        appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let allRecords = [];
+
+    const q = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
+
+    onSnapshot(q, (snapshot) => {
+        allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderViolations();
+    });
+
+    function renderViolations() {
+        const tbody = document.getElementById("violationTableBody");
+        const typeFilter = document.getElementById("violationTypeFilter").value;
+        const searchFilter = document.getElementById("studentSearch").value.toLowerCase();
+        
+        tbody.innerHTML = "";
+
+        const violationCounts = {};
+        allRecords.forEach(rec => {
+            if (rec.status !== "Complete" && rec.studentId) {
+                violationCounts[rec.studentId] = (violationCounts[rec.studentId] || 0) + 1;
+            }
+        });
+
+        const violationRecords = allRecords.filter(rec => rec.status !== "Complete");
+
+        violationRecords.forEach(record => {
+            const studentId = record.studentId || "N/A";
+            const studentName = record.studentName || "Unknown";
+            const vType = record.violationType || "Unknown";
+
+            const matchesType = typeFilter === "" || vType === typeFilter;
+            const matchesSearch = studentId.toLowerCase().includes(searchFilter) || 
+                                studentName.toLowerCase().includes(searchFilter);
+
+            if (matchesType && matchesSearch) {
+                const count = violationCounts[studentId] || 0;
+                const isFlagged = count >= 3;
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight:600;">${record.dateString}</div>
+                        <div style="font-size:0.75rem; opacity:0.6;">${record.timeString}</div>
+                    </td>
+                    <td>
+                        <img src="${record.capturedImage || 'https://via.placeholder.com/40'}" 
+                             class="img-proof" 
+                             onclick="showImage('${record.capturedImage}')">
+                    </td>
+                    <td>${studentId}</td>
+                    <td>${studentName}</td>
+                    <td>${vType}</td>
+                    <td><span class="count-circle" style="${isFlagged ? 'background:#e74c3c' : ''}">${count}</span></td>
+                    <td>
+                        ${isFlagged 
+                            ? `<span class="flagged-status"><i class="fas fa-exclamation-triangle"></i> Flagged</span>` 
+                            : `<span class="pending-status">Pending</span>`}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+    }
+
+
+    window.showImage = (src) => {
+        const modal = document.getElementById("imageModal");
+        const modalImg = document.getElementById("modalImg");
+        modal.style.display = "flex";
+        modalImg.src = src;
+    }
+
+    document.getElementById("violationTypeFilter").addEventListener("change", renderViolations);
+    document.getElementById("studentSearch").addEventListener("input", renderViolations);
+
+</script>
 </body>
 </html>
-

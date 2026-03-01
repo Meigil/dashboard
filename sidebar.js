@@ -1,9 +1,9 @@
-// sidebar.js
+
 document.addEventListener("DOMContentLoaded", function() {
     const sidebarContainer = document.querySelector('.sidebar');
     
     if (sidebarContainer) {
-        // Kunin ang pangalan ng kasalukuyang file (halimbawa: index.html)
+ 
         const currentPage = window.location.pathname.split("/").pop() || 'index.html';
 
         const sidebarHTML = `
@@ -16,8 +16,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 <li class="${currentPage === 'students.html' ? 'active' : ''}" onclick="location.href='students.html'"> Students</li>
                 <li class="${currentPage === 'records.html' ? 'active' : ''}" onclick="location.href='records.html'"> Student Records</li>
                 <li class="${currentPage === 'violations.html' ? 'active' : ''}" onclick="location.href='violations.html'"> Violations</li>
-                <li class="${currentPage === 'admin-uniform.html' ? 'active' : ''}" onclick="location.href='admin-uniform.html'"> Upload Uniforms</li>
-                <li class="${currentPage === 'uniforms.html' ? 'active' : ''}" onclick="location.href='uniforms.html'"> Saved Uniforms</li>
+                <li class="${currentPage === 'uniforms.html' ? 'active' : ''}" onclick="location.href='uniforms.html'"> Upload Uniforms</li>
+                <li class="${currentPage === 'uploaduniform.html' ? 'active' : ''}" onclick="location.href='uploaduniform.html'"> Saved Uniforms</li>
                   <li class="${currentPage === 'guidance.html' ? 'active' : ''}" onclick="location.href='guidance.html'"> Guidance</li>
 
                 <li class="section-title"> Admin </li>

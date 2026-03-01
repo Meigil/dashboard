@@ -2,12 +2,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebas
 import { getFirestore, collection, getDocs, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
-  authDomain: "thesissystem-921ef.firebaseapp.com",
-  projectId: "thesissystem-921ef",
-  storageBucket: "thesissystem-921ef.appspot.com",
-  messagingSenderId: "62118219774",
-  appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
+    apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
+    authDomain: "thesissystem-921ef.firebaseapp.com",
+    projectId: "thesissystem-921ef",
+    storageBucket: "thesissystem-921ef.appspot.com",
+    messagingSenderId: "62118219774",
+    appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -22,228 +22,260 @@ const canvas = document.getElementById("overlay");
 const resName = document.getElementById("resName");
 const resId = document.getElementById("resId");
 const resProgram = document.getElementById("resProgram"); 
-const resMatch = document.getElementById("resMatch");
-const resTime = document.getElementById("resTime");
-const detectionStatus = document.getElementById("detectionStatus");
 const resStatus = document.getElementById("resStatus");
 const resViolation = document.getElementById("resViolation");
+const resMatch = document.getElementById("resMatch");
+const resTime = document.getElementById("resTime");
+const resDate = document.getElementById("resDate");
+const detectionStatus = document.getElementById("detectionStatus");
+const countdownOverlay = document.getElementById("countdownOverlay");
+const confirmSection = document.getElementById("confirmSection");
 
 let faceMatcher;
+let isReviewing = false; 
+let timerActive = false;
+let countdownInterval = null;
+let lastDetectedData = null; 
 const studentInfoMap = {};
-const recordedToday = new Set(); 
-const recordingNow = new Set();
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
 
 Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri("./models"),
-  faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
-  faceapi.nets.faceRecognitionNet.loadFromUri("./models"),
-  faceapi.nets.ssdMobilenetv1.loadFromUri("./models")
+    faceapi.nets.tinyFaceDetector.loadFromUri("./models"),
+    faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
+    faceapi.nets.faceRecognitionNet.loadFromUri("./models"),
+    faceapi.nets.ssdMobilenetv1.loadFromUri("./models")
 ]).then(async () => {
-  console.log("AI Models Loaded");
-  faceMatcher = await loadStudentsFromFirestore();
-  startCamera();
+    console.log("AI Models Loaded");
+    faceMatcher = await loadStudentsFromFirestore();
+    startCamera();
 });
 
 function startCamera() {
-  navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, facingMode: "user" } })
-    .then(stream => video.srcObject = stream)
-    .catch(err => {
-      console.error("Camera Error:", err);
-      detectionStatus.textContent = "Camera Error";
-    });
+    navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, facingMode: "user" } })
+        .then(stream => video.srcObject = stream)
+        .catch(err => console.error("Camera Error:", err));
 }
 
 async function loadStudentsFromFirestore() {
-  const snapshot = await getDocs(collection(db, "students"));
-  const labeledDescriptors = [];
-
-  for (const docSnap of snapshot.docs) {
-    const data = docSnap.data();
-    studentInfoMap[data.fullName] = data;
-
-    try {
-      const img = await faceapi.fetchImage(data.imageBase64);
-      const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-      if (detection) labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.fullName, [detection.descriptor]));
-    } catch (error) {
-      console.error("Image load error:", data.fullName);
+    const snapshot = await getDocs(collection(db, "students"));
+    const labeledDescriptors = [];
+    for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        studentInfoMap[data.fullName] = data; 
+        try {
+            const img = await faceapi.fetchImage(data.imageBase64);
+            const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+            if (detection) labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.fullName, [detection.descriptor]));
+        } catch (e) { console.error("Error loading student:", data.fullName); }
     }
-  }
-  return new faceapi.FaceMatcher(labeledDescriptors, 0.3);
+    return new faceapi.FaceMatcher(labeledDescriptors, 0.4);
 }
 
-function resetUI() {
-  resName.innerHTML = `<strong>Student Name:</strong> Unknown`;
-  resId.innerHTML = `<strong>Student ID:</strong> ---`;
-  if (resProgram) resProgram.innerHTML = `<strong>Program / Year:</strong> ---`;
-  
-  resMatch.innerHTML = `Low`;
-  resMatch.style.color = "white";
-
-  detectionStatus.textContent = "Scanning...";
-  detectionStatus.style.setProperty('color', '#ff4b5c', 'important'); 
+function playBeep(freq = 600, duration = 0.1) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = freq; osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+    osc.stop(audioCtx.currentTime + duration);
 }
 
-function updateUI(faceResult) {
-  resTime.textContent = new Date().toLocaleTimeString();
+function startCountdown(data) {
+    if (timerActive || isReviewing) return;
+    timerActive = true;
+    let count = 5;
+    countdownOverlay.style.display = "block";
+    countdownOverlay.textContent = count;
+    playBeep(600, 0.2);
 
-  if (faceResult.label !== "unknown") {
-    const student = studentInfoMap[faceResult.label];
-    resName.innerHTML = `<strong>Student Name:</strong> ${faceResult.label}`;
-    resId.innerHTML = `<strong>Student ID:</strong> ${student?.studentId || "---"}`;
-    
-    const displayProg = `${student?.course || ""} - ${student?.yearLevel || ""}`.trim();
-    if (resProgram) resProgram.innerHTML = `<strong>Program / Year:</strong> ${displayProg || "---"}`;
-
-    resMatch.innerHTML = `${Math.round((1 - faceResult.distance) * 100)}%`;
-    resMatch.style.color = "#2ecc71"; 
-
-    if (recordedToday.has(faceResult.label)) {
-      detectionStatus.textContent = "Already Recorded";
-      detectionStatus.style.setProperty('color', '#3498db', 'important'); 
-    } else {
-      detectionStatus.textContent = "Identified & Recorded";
-      detectionStatus.style.setProperty('color', '#2ecc71', 'important'); 
-    }
-  } else {
-    resName.innerHTML = `<strong>Student Name:</strong> Unknown`;
-    resId.innerHTML = `<strong>Student ID:</strong> ---`;
-    if (resProgram) resProgram.innerHTML = `<strong>Program / Year:</strong> ---`;
-    
-    resMatch.innerHTML = `Low`;
-    resMatch.style.color = "#f1c40f"; 
-
-    detectionStatus.textContent = "Unknown Face";
-    detectionStatus.style.setProperty('color', '#f1c40f', 'important'); 
-  }
+    countdownInterval = setInterval(() => {
+        count--;
+        countdownOverlay.textContent = count;
+        playBeep(600, 0.1);
+        if (count <= 0) {
+            clearInterval(countdownInterval);
+            countdownOverlay.style.display = "none";
+            playBeep(880, 0.5);
+            triggerReview(data);
+        }
+    }, 1000);
 }
 
-async function recordAttendance(name, currentUniformStatus, currentViolationType) {
-  if (recordedToday.has(name) || recordingNow.has(name)) return;
+function triggerReview(data) {
+    isReviewing = true;
+    video.pause(); 
+    lastDetectedData = data;
+    confirmSection.style.display = "flex";
+    detectionStatus.textContent = "VERIFY DETAILS & CONFIRM";
+    detectionStatus.style.color = "#f1c40f";
+}
 
-  recordingNow.add(name); 
-
-  const student = studentInfoMap[name];
-  const now = new Date();
-  const todayStr = now.toLocaleDateString();
-
-  try {
-    const q = query(
-      collection(db, "attendance"),
-      where("studentName", "==", name),
-      where("dateString", "==", todayStr)
-    );
-
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
-      recordedToday.add(name);
-      return;
+document.getElementById("btnConfirm").onclick = async () => {
+    if (lastDetectedData) {
+        await recordAttendance(lastDetectedData.name, lastDetectedData.status, lastDetectedData.violation);
+        alert("Attendance Recorded!");
+        resetSystem();
     }
+};
 
-    await addDoc(collection(db, "attendance"), {
-      studentName: name,
-      studentId: student?.studentId || "N/A",
-      programLevel: `${student?.course || "Unknown"} - ${student?.yearLevel || "N/A"}`,
-      timestamp: serverTimestamp(),
-      dateString: todayStr,
-      timeString: now.toLocaleTimeString(),
-      status: currentUniformStatus || "Unknown",
-      violationType: currentViolationType || "---"
-    });
+document.getElementById("btnRetake").onclick = () => { resetSystem(); };
 
-    recordedToday.add(name);
-  } catch (error) {
-    console.error("Error saving attendance:", error);
-  } finally {
-    recordingNow.delete(name); 
-  }
+function resetSystem() {
+    isReviewing = false;
+    timerActive = false;
+    confirmSection.style.display = "none";
+    video.play();
+    detectionStatus.textContent = "Scanning...";
+    resetUI();
 }
 
 video.addEventListener("play", () => {
-  const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
+    setInterval(async () => {
+        if (isReviewing) return;
 
-  function updateCanvasSize() {
-    canvas.width = video.clientWidth;
-    canvas.height = video.clientHeight;
-  }
-  updateCanvasSize();
-  window.addEventListener("resize", updateCanvasSize);
+        canvas.width = video.clientWidth;
+        canvas.height = video.clientHeight;
 
-setInterval(async () => {
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = video.clientWidth;
-    tempCanvas.height = video.clientHeight;
-    const tempCtx = tempCanvas.getContext("2d");
-    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-    const base64Image = tempCanvas.toDataURL("image/jpeg").split(",")[1];
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = video.clientWidth;
+        tempCanvas.height = video.clientHeight;
+        tempCanvas.getContext("2d").drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+        const base64Image = tempCanvas.toDataURL("image/jpeg").split(",")[1];
 
-    const [detections, roboflowRes] = await Promise.all([
-      faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceDescriptors(),
-      fetch(ROBOFLOW_URL, {
-        method: "POST",
-        body: base64Image
-      }).then(res => res.json()).catch(() => ({ predictions: [] }))
-    ]);
+        const [detections, roboflowRes] = await Promise.all([
+            faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors(),
+            fetch(ROBOFLOW_URL, { method: "POST", body: base64Image }).then(res => res.json()).catch(() => ({ predictions: [] }))
+        ]);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    let currentUniformStatus = "Scanning...";
-    let currentViolation = "---";
-    const detectedUniformParts = [];
-    const CONFIDENCE_THRESHOLD = 0.75; 
+let currentUniformStatus = "No Uniform";
+let currentViolation = "---";
+const detectedParts = [];
 
-    if (roboflowRes.predictions && roboflowRes.predictions.length > 0) {
-      roboflowRes.predictions.forEach(pred => {
-        if (pred.confidence >= CONFIDENCE_THRESHOLD) {
-          detectedUniformParts.push(pred.class);
-          const x = pred.x - pred.width / 2;
-          const y = pred.y - pred.height / 2;
-          ctx.strokeStyle = "#00c6ff"; 
-          ctx.lineWidth = 3;
-          ctx.strokeRect(x, y, pred.width, pred.height);
-          ctx.fillStyle = "#00c6ff";
-          ctx.fillRect(x, y - 25, pred.width, 25);
-          ctx.fillStyle = "#000";
-          ctx.font = "bold 16px Arial";
-          ctx.fillText(`${pred.class} ${Math.round(pred.confidence * 100)}%`, x + 5, y - 7);
+if (roboflowRes.predictions) {
+    roboflowRes.predictions.forEach(pred => {
+        if (pred.confidence >= 0.80) {
+            detectedParts.push(pred.class);
+
+            const x = pred.x - pred.width / 2;
+            const y = pred.y - pred.height / 2;
+
+            ctx.strokeStyle = "#00c6ff"; 
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, pred.width, pred.height);
+
+            ctx.fillStyle = "#00c6ff";
+            const text = `${pred.class.toUpperCase()} ${Math.round(pred.confidence * 100)}%`;
+            const textWidth = ctx.measureText(text).width;
+            ctx.fillRect(x - 1.5, y - 25, textWidth + 10, 25); 
+
+            ctx.fillStyle = "#000000"; 
+            ctx.font = "bold 14px Inter, Arial";
+            ctx.fillText(text, x + 4, y - 7);
         }
-      });
-      const requiredParts = ["blouse", "lanyard", "pants", "shoes"];
-      const missingParts = requiredParts.filter(part => !detectedUniformParts.includes(part));
+    });
 
-      if (detectedUniformParts.length === 0) {
-        currentUniformStatus = "No Uniform Detected";
-        currentViolation = "Wearing Civilian / No Match";
-      } else if (missingParts.length > 0) {
-        currentUniformStatus = "Incomplete";
-        const formattedMissing = missingParts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(", ");
-        currentViolation = `Missing: ${formattedMissing}`;
-      } else {
-        currentUniformStatus = "Complete";
-        currentViolation = "None";
-      }
-    } else {
-      currentUniformStatus = "Scanning...";
-      currentViolation = "No Objects Detected";
-    }
-    if (resStatus) resStatus.innerHTML = `<strong>Uniform Status:</strong> ${currentUniformStatus}`;
-    if (resViolation) resViolation.innerHTML = `<strong>Violation Type:</strong> ${currentViolation}`;
-    const displaySize = { width: video.clientWidth, height: video.clientHeight };
-    const resized = faceapi.resizeResults(detections, displaySize);
+    const required = ["blouse", "lanyard", "pants", "shoes"];
+    const missing = required.filter(p => !detectedParts.includes(p));
+    currentUniformStatus = detectedParts.length === 0 ? "No Uniform" : (missing.length > 0 ? "Incomplete" : "Complete");
+    currentViolation = missing.length > 0 ? `Missing: ${missing.join(", ")}` : "None";
+}
 
-    if (faceMatcher && resized.length > 0) {
-      for (const det of resized) {
-        const match = faceMatcher.findBestMatch(det.descriptor);
-        const color = match.label === "unknown" ? "#f1c40f" : "#2ecc71";
-        new faceapi.draw.DrawBox(det.detection.box, { label: match.toString(), boxColor: color }).draw(canvas);
-        updateUI(match);
-        if (match.label !== "unknown") recordAttendance(match.label, currentUniformStatus, currentViolation);
-      }
-    } else {
-      resetUI(); 
-    }
-  }, 500);
+        const displaySize = { width: video.clientWidth, height: video.clientHeight };
+        const resized = faceapi.resizeResults(detections, displaySize);
+
+        if (faceMatcher && resized.length > 0) {
+            const match = faceMatcher.findBestMatch(resized[0].descriptor);
+            const boxColor = match.label === "unknown" ? "#f1c40f" : "#2ecc71";
+            new faceapi.draw.DrawBox(resized[0].detection.box, { label: match.toString(), boxColor }).draw(canvas);
+
+            updateUI(match, currentUniformStatus, currentViolation);
+
+            if (match.label !== "unknown") {
+                startCountdown({ name: match.label, status: currentUniformStatus, violation: currentViolation });
+            } else {
+                stopCountdown();
+            }
+        } else {
+            stopCountdown();
+            resetUI();
+        }
+    }, 500);
 });
+
+function stopCountdown() {
+    clearInterval(countdownInterval);
+    timerActive = false;
+    if(countdownOverlay) countdownOverlay.style.display = "none";
+}
+
+function updateUI(match, status, violation) {
+    const student = studentInfoMap[match.label];
+    const now = new Date();
+
+    resName.innerHTML = `<strong>Student Name:</strong> ${match.label}`;
+    resId.innerHTML = `<strong>Student ID:</strong> ${student?.studentId || "---"}`;
+    
+
+    const progStr = student ? `${student.course} - ${student.yearLevel}` : "---";
+    if (resProgram) resProgram.innerHTML = `<strong>Program / Year:</strong> ${progStr}`;
+
+    resStatus.innerHTML = `<strong>Uniform Status:</strong> ${status}`;
+    resViolation.innerHTML = `<strong>Violation Type:</strong> ${violation}`;
+    resMatch.textContent = `${Math.round((1 - match.distance) * 100)}%`;
+    resTime.textContent = now.toLocaleTimeString();
+    if (resDate) resDate.textContent = now.toLocaleDateString();
+}
+
+function resetUI() {
+    resName.innerHTML = `<strong>Student Name:</strong> Unknown`;
+    resId.innerHTML = `<strong>Student ID:</strong> ---`;
+    if (resProgram) resProgram.innerHTML = `<strong>Program / Year:</strong> ---`;
+    resStatus.innerHTML = `<strong>Uniform Status:</strong> Scanning...`;
+}
+
+async function recordAttendance(name, status, violation) {
+    const student = studentInfoMap[name];
+    const now = new Date();
+    const dateString = now.toLocaleDateString(); 
+
+
+    const attendanceQuery = query(
+        collection(db, "attendance"),
+        where("studentId", "==", student?.studentId),
+        where("dateString", "==", dateString)
+    );
+    
+    const querySnapshot = await getDocs(attendanceQuery);
+
+    if (!querySnapshot.empty) {
+        alert("You have already submitted your attendance today.");
+        return; 
+    }
+
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = video.videoWidth;
+    tempCanvas.height = video.videoHeight;
+    const tCtx = tempCanvas.getContext("2d");
+
+    tCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+    const proofImage = tempCanvas.toDataURL("image/jpeg", 0.5);
+
+    await addDoc(collection(db, "attendance"), {
+        studentName: name,
+        studentId: student?.studentId || "N/A",
+        programLevel: student ? `${student.course} - ${student.yearLevel}` : "Unknown",
+        timestamp: serverTimestamp(),
+        dateString: dateString,
+        timeString: now.toLocaleTimeString(),
+        status: status,
+        violationType: violation,
+        capturedImage: proofImage  
+    });
+
+    alert("Attendance Recorded!");
+}

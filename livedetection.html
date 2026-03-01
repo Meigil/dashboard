@@ -5,36 +5,76 @@
   <title>Live Face Detection</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="livedetection.css">
+  <style>
+
+    #overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  pointer-events: none; 
+}
+
+#video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+    #countdownOverlay {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 120px;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(0,0,0,0.8);
+      z-index: 100;
+      pointer-events: none;
+    }
+    .confirmation-btns {
+      display: none; 
+      margin-top: 20px;
+      gap: 10px;
+      width: 100%;
+    }
+    .confirm-btn { background-color: #2ecc71; color: white; flex: 1; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+    .retake-btn { background-color: #ff4b5c; color: white; flex: 1; padding: 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+  </style>
 </head>
 <body>
 
-  <div class="camera-feed" id="camerafaceuniform">
+  <div class="camera-feed" id="camerafaceuniform" style="position: relative;">
     <video id="video" autoplay muted playsinline></video>
     <canvas id="overlay"></canvas>
+    <div id="countdownOverlay">5</div>
   </div>
 
 <div class="detection-info">
     <h2>Detection Result</h2>
     <p id="resName"><strong>Student Name:</strong> Scanning...</p>
     <p id="resId"><strong>Student ID:</strong> ---</p>
-    
-    <p id="resProgram"><strong>Program / Year:</strong> ---</p>
-    
-    <p id="resStatus"><strong>Uniform Status:</strong> Scanning...</p>
+    <p id="resProgram"><strong>Program / Year:</strong> ---</p> <p id="resStatus"><strong>Uniform Status:</strong> Scanning...</p>
     <p id="resViolation"><strong>Violation Type:</strong> Scanning...</p>
     <p><strong>Face Match:</strong> <span id="resMatch">0%</span></p>
     <p><strong>Date:</strong> <span id="resDate">--/--/----</span></p>
     <p><strong>Time:</strong> <span id="resTime">--:--</span></p>
 
     <p class="camera-status">
-      Status: <span id="detectionStatus" class="violation">Scanning...</span>
+      Status: <span id="detectionStatus">Scanning...</span>
     </p>
+
+    <div class="confirmation-btns" id="confirmSection">
+      <button class="confirm-btn" id="btnConfirm">Correct Details</button>
+      <button class="retake-btn" id="btnRetake">Wrong Details (Retake)</button>
+    </div>
   </div>
 
   <button class="return-btn" onclick="location.href='index.html'">Return</button>
-<script src="https://cdn.roboflow.com/0.2.26/roboflow.js"></script>
+
+  <script src="https://cdn.roboflow.com/0.2.26/roboflow.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
   <script type="module" src="detection.js"></script>
-
 </body>
 </html>
