@@ -54,6 +54,7 @@
         </optgroup>
       </select>
     </div>
+    
 
     <div class="filter-group">
       <label>Select Grade / Year</label>
@@ -72,6 +73,128 @@
       </select>
     </div>
   </div>
+ <div id="bulkActionBar" style="
+display:none;
+background: linear-gradient(135deg,#0c0216,#0c0216);
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
+border:1px solid #d8dcff;
+position: sticky;
+top: 10px;
+z-index: 100;
+box-shadow:0 4px 10px rgba(0,0,0,0.05);
+">
+
+
+<div style="display: flex; align-items: center; gap: 8px;">
+<select id="promoteToYear" style="
+padding:7px 10px;
+border-radius:6px;
+border:1px solid #cfd4ff;
+background:#ffffff;
+">
+
+<option value="">Move to Year</option>
+
+<optgroup label="Senior High School">
+<option value="Grade 11">Grade 11</option>
+<option value="Grade 12">Grade 12</option>
+</optgroup>
+
+<optgroup label="College">
+<option value="1st Year">1st Year</option>
+<option value="2nd Year">2nd Year</option>
+<option value="3rd Year">3rd Year</option>
+<option value="4th Year">4th Year</option>
+</optgroup>
+
+</select>
+
+<button id="bulkPromoteBtn" style="
+background:#4f6df5;
+color:white;
+padding:8px 16px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+">
+Update Level
+</button>
+
+</div>
+
+<div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+  <select id="shiftToProgram" style="
+    padding:7px 10px;
+    border-radius:6px;
+    border:1px solid #cfd4ff;
+    background:#ffffff;
+  ">
+    <option value="">Shift to Program</option>
+    <optgroup label="Senior High School">
+      <option value="ABM">Accountancy, Business, and Management (ABM)</option>
+      <option value="HUMSS">Humanities and Social Sciences (HUMSS)</option>
+      <option value="IT-MAWD">IT in Mobile App and Web Development (IT-MAWD)</option>
+      <option value="CCT">Computer and Communications Technology (CCT)</option>
+      <option value="TOPER">Tourism Operations (TOPER)</option>
+      <option value="CULART">Culinary Arts (CULART)</option>
+    </optgroup>
+    <optgroup label="Tertiary Programs">
+      <option value="BSCS">Bachelor of Science in Computer Science (BSCS)</option>
+      <option value="BSIT">Bachelor of Science in Information Technology (BSIT)</option>
+      <option value="BSBA">Bachelor of Science in Business Administration (BSBA)</option>
+      <option value="BSAIS">Bachelor of Science in Accounting Information System (BSAIS)</option>
+      <option value="BSA">Bachelor of Science in Accountancy (BSA)</option>
+      <option value="BSHM">Bachelor of Science in Hospitalilty Management (BSHM)</option>
+      <option value="BACOMM">Bachelor of Arts in Communication (BACOMM)</option>
+      <option value="BMMA">Bachelor of Multimedia Arts (BMMA)</option>
+      <option value="BSTM">Bachelor of Science in Tourism Management (BSTM)</option>
+    </optgroup>
+  </select>
+
+
+
+<button id="bulkShiftBtn" style="
+background:#7c5cff;
+color:white;
+padding:8px 16px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+">
+Shift Program
+</button>
+</div>
+<div style="display:flex; align-items:center; gap:15px; flex-wrap: wrap;">
+
+<label style="font-weight:600; display:flex; align-items:center; gap:6px; cursor:pointer;">
+<input type="checkbox" id="selectAllCheckbox" style="transform:scale(1.2)"> Select All Visible
+</label>
+
+<span id="selectedCount" style="color:#555; font-size:0.9rem;">
+0 students selected
+</span>
+
+<div style="flex-grow:1"></div>
+
+<button id="bulkDeleteBtn" style="
+background:#ff4d5a;
+color:white;
+padding:8px 16px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+">
+Delete Selected
+</button>
+
+</div>
+
+</div>
 
   <div id="studentsWrapper"></div>
 

@@ -145,6 +145,26 @@
       </button>
     </div>
   </div>
+  <div id="bulkLoadingArea" style="display: none; align-items: center; gap: 10px; margin: 15px 0;">
+  <div class="spinner" style="
+    width: 20px; 
+    height: 20px; 
+    border: 3px solid #f3f3f3; 
+    border-top: 3px solid #2563eb; 
+    border-radius: 50%; 
+    animation: spin 0.8s linear infinite;">
+  </div>
+  <span id="bulkStatus" style="font-family: sans-serif; font-size: 14px; color: #4b5563; font-weight: 500;">
+    Processing...
+  </span>
+</div>
+
+<style>
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
 
   <script src="sidebar.js"></script>
   <script type="module" src="capture.js"></script>

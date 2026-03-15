@@ -98,7 +98,7 @@ function renderCSV() {
   csvList.innerHTML = "";
   if (csvFileInput.files[0]) {
     const file = csvFileInput.files[0];
-    csvList.innerHTML = `<div class="file-item"><span>📄 ${file.name}</span><span onclick="removeCSV()">✕</span></div>`;
+    csvList.innerHTML = `<div class="file-item"><span> ${file.name}</span><span onclick="removeCSV()">✕</span></div>`;
   }
 }
 
@@ -126,30 +126,52 @@ function renderImages() {
 startBulkBtn.addEventListener("click", () => {
   if (!csvFileInput.files[0] || currentImages.length === 0) return alert("Select CSV and Images!");
 
+  const loadingArea = document.getElementById("bulkLoadingArea");
+  const statusText = document.getElementById("bulkStatus");
+  const spinner = document.querySelector(".spinner");
+
   Papa.parse(csvFileInput.files[0], {
     header: true,
     skipEmptyLines: true,
     complete: async (results) => {
       const students = results.data;
+      const total = students.length;
       let success = 0;
-      for (const s of students) {
+      loadingArea.style.display = "flex";
+      spinner.style.display = "block";
+      statusText.innerText = `Preparing upload...`;
+
+      for (const [i, s] of students.entries()) {
         const sId = s.StudentId?.trim();
-        if (!sId) continue;
-        const photo = currentImages.find(f => f.name.split('.')[0] === sId);
-        if (photo) {
-          const base64 = await convertToBase64(photo);
-          await setDoc(doc(db, "students", sId), {
-            studentId: sId,
-            fullName: s.fullName || "N/A",
-            course: s.course || "N/A",
-            yearLevel: s.yearLevel || "N/A",
-            imageBase64: base64,
-            createdAt: serverTimestamp()
-          });
-          success++;
+        const currentNum = i + 1; 
+        statusText.innerText = `Uploading: ${currentNum} out of ${total}`;
+
+        if (sId) {
+          const photo = currentImages.find(f => f.name.split('.')[0] === sId);
+          if (photo) {
+            try {
+              const base64 = await convertToBase64(photo);
+              await setDoc(doc(db, "students", sId), {
+                studentId: sId,
+                fullName: s.fullName || "N/A",
+                course: s.course || "N/A",
+                yearLevel: s.yearLevel || "N/A",
+                imageBase64: base64,
+                createdAt: serverTimestamp()
+              });
+              success++;
+            } catch (err) {
+              console.error("Error for " + sId, err);
+            }
+          }
         }
       }
-      bulkStatus.innerText = `Done! Success: ${success}`;
+
+      spinner.style.display = "none"; 
+      statusText.innerText = `Done! Saved ${success} out of ${total} students.`;
+      setTimeout(() => {
+        loadingArea.style.display = "none";
+      }, 5000);
     }
   });
 });

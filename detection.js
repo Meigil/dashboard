@@ -13,8 +13,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const ROBOFLOW_API_KEY = "32Js5Nadtxn763aUKKd6"; 
-const ROBOFLOW_MODEL = "uniform-detection-3omub/1"; 
+const ROBOFLOW_API_KEY = "6ZiBvhOy1AdjD3rOrkOi"; 
+const ROBOFLOW_MODEL = "sti-mfhk4/1"; 
 const ROBOFLOW_URL = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
 const video = document.getElementById("video");
@@ -32,6 +32,7 @@ const countdownOverlay = document.getElementById("countdownOverlay");
 const confirmSection = document.getElementById("confirmSection");
 
 let faceMatcher;
+let uniformDescriptors = [];
 let isReviewing = false; 
 let timerActive = false;
 let countdownInterval = null;
@@ -47,6 +48,7 @@ Promise.all([
     faceapi.nets.ssdMobilenetv1.loadFromUri("./models")
 ]).then(async () => {
     console.log("AI Models Loaded");
+    uniformDescriptors = await loadUniforms();
     faceMatcher = await loadStudentsFromFirestore();
     startCamera();
 });
@@ -84,7 +86,7 @@ function playBeep(freq = 600, duration = 0.1) {
 function startCountdown(data) {
     if (timerActive || isReviewing) return;
     timerActive = true;
-    let count = 5;
+    let count = 1;
     countdownOverlay.style.display = "block";
     countdownOverlay.textContent = count;
     playBeep(600, 0.2);
@@ -156,8 +158,10 @@ let currentViolation = "---";
 const detectedParts = [];
 
 if (roboflowRes.predictions) {
-    roboflowRes.predictions.forEach(pred => {
+    roboflowRes.predictions.forEach(async (pred) => {
+
         if (pred.confidence >= 0.80) {
+
             detectedParts.push(pred.class);
 
             const x = pred.x - pred.width / 2;
@@ -175,8 +179,42 @@ if (roboflowRes.predictions) {
             ctx.fillStyle = "#000000"; 
             ctx.font = "bold 14px Inter, Arial";
             ctx.fillText(text, x + 4, y - 7);
+
+            // ===== CROP UNIFORM AREA =====
+            const tempUniform = document.createElement("canvas");
+            tempUniform.width = pred.width;
+            tempUniform.height = pred.height;
+
+            const uctx = tempUniform.getContext("2d");
+
+            uctx.drawImage(
+                video,
+                x,
+                y,
+                pred.width,
+                pred.height,
+                0,
+                0,
+                pred.width,
+                pred.height
+            );
+
+            // ===== EXTRACT DESCRIPTOR =====
+            const uniformDetection = await faceapi
+                .detectSingleFace(tempUniform)
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (uniformDetection) {
+
+                const program = compareUniform(uniformDetection.descriptor);
+
+                console.log("Uniform Match Program:", program);
+
+            }
         }
     });
+
 
     const required = ["blouse", "lanyard", "pants", "shoes"];
     const missing = required.filter(p => !detectedParts.includes(p));
@@ -210,6 +248,48 @@ function stopCountdown() {
     clearInterval(countdownInterval);
     timerActive = false;
     if(countdownOverlay) countdownOverlay.style.display = "none";
+}
+async function loadUniforms() {
+
+    const snapshot = await getDocs(collection(db, "uniforms"));
+
+    const uniforms = [];
+
+    snapshot.forEach(doc => {
+
+        const data = doc.data();
+
+        uniforms.push({
+            program: data.program,
+            descriptor: new Float32Array(data.descriptor)
+        });
+
+    });
+
+    return uniforms;
+}
+
+function compareUniform(desc) {
+
+ let bestMatch = null;
+ let bestDistance = 1;
+
+ uniformDescriptors.forEach(u => {
+
+   const distance = faceapi.euclideanDistance(desc, u.descriptor);
+
+   if(distance < bestDistance){
+      bestDistance = distance;
+      bestMatch = u.program;
+   }
+
+ });
+
+ if(bestDistance < 0.45){
+    return bestMatch;
+ }
+
+ return "Unknown";
 }
 
 function updateUI(match, status, violation) {
