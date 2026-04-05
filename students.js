@@ -28,13 +28,13 @@ const noStudentsMsg = document.getElementById("noStudentsMessage");
 const bulkActionBar = document.getElementById("bulkActionBar");
 const selectedCountLabel = document.getElementById("selectedCount");
 
-// Helper to get labels from the select dropdown
+
 function getCourseLabel(value) {
   const option = document.querySelector(`#programFilter option[value="${value}"]`);
   return option ? option.textContent : value;
 }
 
-// --- BULK ACTION LOGIC ---
+
 
 function updateSelectedCount() {
   const checked = document.querySelectorAll('.student-checkbox:checked');
@@ -67,7 +67,7 @@ window.toggleSelectAllVisible = (masterCheckbox) => {
   updateSelectedCount();
 };
 
-// --- RENDER LOGIC ---
+
 
 function renderStudents(snapshot) {
   studentsWrapper.innerHTML = "";
@@ -92,7 +92,6 @@ function renderStudents(snapshot) {
     let programTotal = 0;
     for (const y in grouped[course]) { programTotal += grouped[course][y].length; }
 
-    // Program Header
     const h2 = document.createElement("h2");
     h2.className = "program-title";
     h2.dataset.program = course;
@@ -106,7 +105,7 @@ function renderStudents(snapshot) {
     for (const year in grouped[course]) {
       const yearCount = grouped[course][year].length;
 
-      // Year Header
+
       const h3 = document.createElement("h3");
       h3.className = "year-title";
       h3.dataset.program = course; h3.dataset.year = year;
@@ -149,14 +148,14 @@ function renderStudents(snapshot) {
           </td>
         `;
 
-        // Image Modal Open
+  
         tr.querySelector("img").onclick = () => {
           document.getElementById("imageModal").style.display = "block";
           document.getElementById("imgFull").src = s.imageBase64 || "default.jpg";
           document.getElementById("caption").textContent = s.fullName;
         };
 
-        // Individual Edit
+ 
         tr.querySelector(".edit-btn").onclick = async () => {
           const newId = prompt("Edit Student ID:", s.studentId);
           const newName = prompt("Edit Full Name:", s.fullName);
@@ -175,7 +174,6 @@ function renderStudents(snapshot) {
           }
         };
 
-        // Individual Delete
         tr.querySelector(".delete-btn").onclick = async () => {
           if (confirm(`Delete ${s.fullName}?`)) await deleteDoc(doc(db, "students", s.docId));
         };
@@ -189,7 +187,6 @@ function renderStudents(snapshot) {
   searchStudents(); 
 }
 
-// --- BULK BUTTON ACTIONS ---
 
 document.getElementById("bulkPromoteBtn").onclick = async () => {
   const newLevel = document.getElementById("promoteToYear").value;
@@ -203,24 +200,21 @@ document.getElementById("bulkPromoteBtn").onclick = async () => {
   }
 };
 
-// --- BULK SHIFT LOGIC (Updated to use Dropdown) ---
+
 document.getElementById("bulkShiftBtn").onclick = async () => {
-  // 1. Kunin ang value mula sa dropdown imbes na prompt
+
   const newProgram = document.getElementById("shiftToProgram").value;
-  
-  // 2. Validation: Kung walang pinili sa dropdown
+
   if (!newProgram) {
     return alert("Please select a program from the dropdown list.");
   }
 
   const selected = document.querySelectorAll('.student-checkbox:checked');
-  
-  // Check kung may naka-check na students
+
   if (selected.length === 0) {
     return alert("Please select at least one student to shift.");
   }
 
-  // 3. Confirm at Execute
   if (confirm(`Shift ${selected.length} selected students to ${newProgram}?`)) {
     try {
       const batch = writeBatch(db);
@@ -232,10 +226,7 @@ document.getElementById("bulkShiftBtn").onclick = async () => {
       
       await batch.commit();
       alert("Shifted successfully!");
-      
-      // Reset dropdown after success
       document.getElementById("shiftToProgram").value = "";
-      // Uncheck "Select All" if you have one
       if(document.getElementById("selectAllCheckbox")) {
         document.getElementById("selectAllCheckbox").checked = false;
       }
@@ -258,9 +249,7 @@ document.getElementById("bulkDeleteBtn").onclick = async () => {
   }
 };
 
-// --- FILTERS & SEARCH ---
 
-// --- FILTERS & SEARCH ---
 
 function filterByProgram() {
   const program = document.getElementById("programFilter").value;
@@ -276,8 +265,7 @@ function filterByProgram() {
       el.style.display = "none";
     }
   });
-  
-  // Re-run search after filtering to maintain consistency
+
   searchStudents();
 }
 
@@ -286,16 +274,13 @@ function searchStudents() {
   const programFilter = document.getElementById("programFilter").value;
   const yearFilter = document.getElementById("yearFilter").value;
 
-  // 1. Hide/Show Rows based on Search and current Filters
   document.querySelectorAll("#studentsWrapper tbody tr").forEach(row => {
     const id = row.cells[2].innerText.toLowerCase();
     const name = row.cells[3].innerText.toLowerCase();
     const container = row.closest('.table-container');
-    
-    // Check if row matches search text
+ 
     const matchesSearch = id.includes(queryText) || name.includes(queryText);
-    
-    // Check if row matches current dropdown filters
+
     const matchesFilter = (programFilter === "all" || container.dataset.program === programFilter) &&
                           (yearFilter === "all" || container.dataset.year === yearFilter);
 
@@ -306,7 +291,6 @@ function searchStudents() {
     }
   });
 
-  // 2. Hide Headers/Containers that no longer have visible rows
   let totalVisible = 0;
 
   document.querySelectorAll(".table-container").forEach(container => {
@@ -316,18 +300,16 @@ function searchStudents() {
 
     if (visibleRows > 0) {
       container.style.display = "";
-      // Show the associated Year and Program titles
       document.querySelectorAll(`.year-title[data-program="${program}"][data-year="${year}"]`).forEach(el => el.style.display = "");
       document.querySelectorAll(`.program-title[data-program="${program}"]`).forEach(el => el.style.display = "");
       totalVisible += visibleRows;
     } else {
       container.style.display = "none";
-      // Hide the year title if this specific container is empty
+
       document.querySelectorAll(`.year-title[data-program="${program}"][data-year="${year}"]`).forEach(el => el.style.display = "none");
     }
   });
 
-  // 3. Cleanup: Hide Program Title if ALL its year levels are hidden
   document.querySelectorAll(".program-title").forEach(title => {
     const program = title.dataset.program;
     const hasVisibleYear = Array.from(document.querySelectorAll(`.year-title[data-program="${program}"]`))
@@ -338,21 +320,17 @@ function searchStudents() {
     }
   });
 
-  // Show "No Students" message if everything is hidden
   noStudentsMsg.style.display = totalVisible === 0 ? "block" : "none";
 }
 
-// Global exposure for HTML inline events
 window.updateSelectedCount = updateSelectedCount;
 window.filterByProgram = filterByProgram;
 window.searchStudents = searchStudents;
 window.toggleSelectAllVisible = toggleSelectAllVisible;
 
-// Real-time listener
 const q = query(collection(db, "students"), orderBy("studentId"));
 onSnapshot(q, renderStudents);
 
-// Close Modal logic
 document.querySelector(".close").onclick = () => {
   document.getElementById("imageModal").style.display = "none";
 };
