@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
- 
     .search-container {
       margin-bottom: 20px;
       position: relative;
@@ -52,6 +51,73 @@
       background: #27ae60;
       transform: scale(1.05);
     }
+
+
+    #imageModal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+      overflow-y: auto;
+      padding: 60px 20px;
+    }
+
+    .history-container {
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .history-card {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .history-img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid #00c6ff;
+      cursor: zoom-in;
+    }
+
+    .history-info { margin-left: 20px; flex-grow: 1; color: white; text-align: left; }
+
+    .close-btn {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      font-size: 35px;
+      color: white;
+      cursor: pointer;
+      z-index: 10000;
+    }
+
+    #zoomModal {
+      display: none;
+      position: fixed;
+      z-index: 10001;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.95);
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .empty-state {
       text-align: center;
       padding: 40px;
@@ -65,9 +131,7 @@
 
   <div class="main-content">
     <h1>Guidance Recommendations</h1>
-    <p class="subtitle">
-      List of students with <strong>3 or more</strong> uniform violations requiring intervention.
-    </p>
+    <p class="subtitle">List of students with <strong>3 or more</strong> uniform violations requiring intervention.</p>
 
     <div class="search-container">
       <input type="text" id="studentSearch" placeholder="Search by Name or Student ID...">
@@ -86,21 +150,28 @@
             <th>Action</th>
           </tr>
         </thead>
-        <tbody id="guidanceTableBody">
-          </tbody>
+        <tbody id="guidanceTableBody"></tbody>
       </table>
       <div id="noRecords" class="empty-state" style="display:none;">
-        <i class="fas fa-check-circle" style="font-size: 40px; margin-bottom: 10px;"></i>
         <p id="emptyMessage">No students currently reached the 3-violation threshold.</p>
       </div>
     </div>
+  </div>
+
+  <div id="imageModal">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <div id="modalContent" class="history-container"></div>
+  </div>
+
+  <div id="zoomModal" onclick="this.style.display='none'">
+      <img id="zoomedImg" src="" style="max-width: 90%; max-height: 90%; border-radius: 10px; border: 3px solid #00c6ff;">
   </div>
 
   <script src="sidebar.js"></script>
   
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, query, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
@@ -116,7 +187,9 @@
 
     let latestRecords = []; 
 
-    onSnapshot(collection(db, "attendance"), (snapshot) => {
+    const q = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
+
+    onSnapshot(q, (snapshot) => {
         latestRecords = snapshot.docs.map(doc => doc.data());
         processGuidanceData(); 
     });
@@ -132,46 +205,53 @@
         const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
         
         tbody.innerHTML = "";
-
         const studentStats = {};
 
         latestRecords.forEach(rec => {
-
             if (rec.status !== "Complete" && rec.studentId) {
                 if (!studentStats[rec.studentId]) {
                     studentStats[rec.studentId] = {
+                        id: rec.studentId,
                         name: rec.studentName || "Unknown",
                         program: rec.programLevel || "N/A",
-                        count: 0
+                        logs: []
                     };
                 }
-                studentStats[rec.studentId].count++;
+                studentStats[rec.studentId].logs.push(rec);
             }
         });
 
-        let hasViolators = false;
         let visibleCount = 0;
         
         for (const id in studentStats) {
             const student = studentStats[id];
-            
-            if (student.count >= 3) {
-                hasViolators = true;
+            const count = student.logs.length;
 
+            if (count >= 3) {
                 const nameMatch = student.name.toLowerCase().includes(searchTerm);
-                const idMatch = id.toLowerCase().includes(searchTerm);
+                const idMatch = student.id.toLowerCase().includes(searchTerm);
 
                 if (nameMatch || idMatch) {
                     visibleCount++;
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
-                        <td style="font-weight:bold; color:#00c6ff;">${id}</td>
+                        <td style="font-weight:bold; color:#00c6ff;">${student.id}</td>
                         <td>${student.name}</td>
                         <td>${student.program}</td>
-                        <td><span class="guidance-badge">${student.count} Violations</span></td>
-                        <td><i class="fas fa-user-shield"></i> Guidance Counseling</td>
+                        <td><span class="guidance-badge">${count} Violations</span></td>
                         <td>
-                          <button class="action-btn" onclick="markCounseled('${id}')">
+                          <button onclick='viewDetails(${JSON.stringify(student.logs.map(l => ({
+                              date: l.dateString,
+                              time: l.timeString,
+                              img: l.capturedImage,
+                              type: l.violationType
+                          }))).replace(/'/g, "&apos;")}, "${student.name}", "${student.program}")' 
+                          style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; padding:5px 10px; border-radius:4px; cursor:pointer;">
+                            View Images
+                          </button>
+                        </td>
+                        <td>
+                          <button class="action-btn" onclick="markCounseled('${student.id}')">
                             Mark as Counseled
                           </button>
                         </td>
@@ -181,31 +261,62 @@
             }
         }
 
-        if (!hasViolators) {
-            noRecordsMsg.style.display = "block";
-            emptyMessage.innerText = "No students currently reached the 3-violation threshold.";
-        } else if (visibleCount === 0 && searchTerm !== "") {
-            noRecordsMsg.style.display = "block";
+        noRecordsMsg.style.display = (visibleCount === 0) ? "block" : "none";
+        if (visibleCount === 0 && searchTerm !== "") {
             emptyMessage.innerText = `No results found for "${searchTerm}"`;
-        } else {
-            noRecordsMsg.style.display = "none";
         }
+    }
+
+    window.viewDetails = (logs, studentName, studentDetails) => {
+        const modal = document.getElementById("imageModal");
+        const container = document.getElementById("modalContent");
+        
+        let listHTML = `
+            <div style="margin-bottom:40px; text-align: center;">
+                <h1 style="color:white; font-size: 2.5rem; margin-bottom:5px; font-weight: bold;">Violation History</h1>
+                <p style="color: #00c6ff; font-size: 1.2rem; margin: 0; font-weight: 500;">${studentName}</p>
+                <p style="color: rgba(255,255,255,0.6); font-size: 1rem; margin-top: 5px;">${studentDetails}</p>
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+            </div>
+        `;
+        
+        logs.forEach(log => {
+            listHTML += `
+                <div class="history-card">
+                    <img src="${log.img || 'https://via.placeholder.com/100'}" 
+                         class="history-img" 
+                         onclick="zoomImage('${log.img}')">
+                    <div class="history-info">
+                        <div style="color: #f1c40f; font-weight: bold; font-size: 1.1rem;">${log.type}</div>
+                        <div style="margin-top: 8px; color: white; opacity: 0.9;">Date: ${log.date}</div>
+                        <div style="color: white; opacity: 0.6; font-size: 0.9rem;">Time: ${log.time}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = listHTML;
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden"; 
+    }
+
+    window.closeModal = () => {
+        document.getElementById("imageModal").style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+
+    window.zoomImage = (src) => {
+        const zoomModal = document.getElementById("zoomModal");
+        const zoomedImg = document.getElementById("zoomedImg");
+        zoomedImg.src = src;
+        zoomModal.style.display = "flex";
     }
 
     window.markCounseled = (id) => {
         if(confirm(`Confirm counseling for Student ID: ${id}?`)) {
-            alert("Record updated locally. Link this to a Firebase update function to make it permanent.");
+            alert("Record updated locally.");
         }
     };
   </script>
-
-  <script>
-    function logout() {
-      if (confirm("Are you sure you want to log out?")) {
-        location.href = "login.html";
-      }
-    }
-  </script>
-
 </body>
-</html>
+</html> 

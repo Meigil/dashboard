@@ -13,8 +13,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const ROBOFLOW_API_KEY = "6ZiBvhOy1AdjD3rOrkOi"; 
-const ROBOFLOW_MODEL = "sti-mfhk4/3"; 
+const ROBOFLOW_API_KEY = "d8519Lg0M6jF4CCVWa7T"; 
+const ROBOFLOW_MODEL = "my-first-project-f1ky7/1"; 
 const ROBOFLOW_URL = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
 const video = document.getElementById("video");
@@ -39,58 +39,81 @@ let countdownInterval = null;
 let lastDetectedData = null; 
 const studentInfoMap = {};
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const csitUniform = [
+    "BSCS and BSIT polo",
+    "BSCS and BSIT pants",
+    "College STI lanyard",
+    "black shoes"
+];
+
+const bacommUniform = [
+    "BACOMM blazer",
+    "BACOMM blouse",
+    "BACOMM pants",
+    "BACOMM polo",
+    "BACOMM skirt",
+    "BACOMM tie",
+    "black shoes"
+];
+
+const SHSUniform = [
+    "SHS blazer",
+    "SHS blouse",
+    "SHS pants",
+    "SHS polo",
+    "SHS skirt",
+    "SHS tie",
+    "SHS vest",
+    "black shoes"
+];
 
 const programUniformMap = {
-  BSCS: ["BSCS and BSIT polo", "BSCS and BSIT pants", "black shoes", "STI College Lanyard"],
-  BSIT: ["BSCS and BSIT polo", "BSCS and BSIT pants", "black shoes", "STI College Lanyard"],
+    "BSCS": csitUniform,
+    "BSIT": csitUniform,
+    "BACOMM": bacommUniform,
+    "BMMA": bacommUniform,
+    "ABM": SHSUniform,
+    "HUMSS": SHSUniform,
+    "IT-MAWD": SHSUniform,
+    "CCT": SHSUniform,
+    "TOPER": SHSUniform,
+    "CULART": SHSUniform
 
-  BSHM: [
-    "BSHM chef polo",
-    "BSHM chef pants",
-    "BSHM coat",
-    "BSHM white shoes",
-    "STI College Lanyard"
-  ],
+};  
 
-  SHS: ["SHS P.E pants", "SHS P.E t-shirt", "STI SHS Lanyard"]
-};
-
-const programGroups = {
-  BSCS_BSIT: ["BSCS", "BSIT"],
-  BSHM: ["BSHM"],
-  SHS: ["SHS"]
-}; 
-function getProgramGroup(program) {
-    for (const group in programGroups) {
-        if (programGroups[group].includes(program)) {
-            return group;
-        }
+function detectWrongProgram(detectedParts, program) {
+    if (program === "BSCS" || program === "BSIT") {
+        return detectedParts.some(p => bacommUniform.includes(p));
     }
-    return null;
+    if (program === "BACOMM" || program === "BMMA") {
+        return detectedParts.some(p => csitUniform.includes(p));
+    }
+    return false;
 }
-function detectWrongProgram(detectedParts, currentProgram) {
 
-    const currentGroup = getProgramGroup(currentProgram);
+function evaluateUniform(detectedParts, program) {
+    const required = programUniformMap[program] || [];
 
-    for (const program in programUniformMap) {
-
-        const otherGroup = getProgramGroup(program);
-
-        if (otherGroup === currentGroup) continue;
-
-        const otherUniforms = programUniformMap[program];
-
-        const match = detectedParts.some(part =>
-            otherUniforms.includes(part)
-        );
-
-        if (match) {
-            return program;
-        }
+    if (detectedParts.length === 0) {
+        return { status: "No Uniform", violation: "No uniform detected" };
     }
 
-    return null;
-}
+    if (detectWrongProgram(detectedParts, program)) {
+        return { status: "Wrong Program Uniform", violation: "Wrong uniform for program" };
+    }
+
+    const missing = required.filter(p => !detectedParts.includes(p));
+
+    if (missing.length === 0) {
+        return { status: "Complete Uniform", violation: "None" };
+    }
+
+    return {
+        status: "Incomplete Uniform",
+        violation: `Missing: ${missing.join(", ")}`
+    };
+} 
+
 Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri("./models"),
     faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
@@ -210,7 +233,7 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence >= 0.80) {
+        if (pred.confidence >= 0.90) {
 
             detectedParts.push(pred.class);
 
@@ -230,7 +253,7 @@ if (roboflowRes.predictions) {
             ctx.font = "bold 14px Inter, Arial";
             ctx.fillText(text, x + 4, y - 7);
 
-  
+            // ===== CROP UNIFORM AREA =====
             const tempUniform = document.createElement("canvas");
             tempUniform.width = pred.width;
             tempUniform.height = pred.height;
@@ -249,7 +272,7 @@ if (roboflowRes.predictions) {
                 pred.height
             );
 
-
+            // ===== EXTRACT DESCRIPTOR =====
             const uniformDetection = await faceapi
                 .detectSingleFace(tempUniform)
                 .withFaceLandmarks()
@@ -265,69 +288,39 @@ if (roboflowRes.predictions) {
         }
     });
 
+
+let program = null;
+
+if (faceMatcher && detections.length > 0) {
+    const match = faceMatcher.findBestMatch(detections[0].descriptor);
+    const student = studentInfoMap[match.label];
+    program = student?.course;
 }
 
-const displaySize = { width: video.clientWidth, height: video.clientHeight };
-const resized = faceapi.resizeResults(detections, displaySize);
+const result = evaluateUniform(detectedParts, program);
 
-if (faceMatcher && resized.length > 0) {
+currentUniformStatus = result.status;
+currentViolation = result.violation;
+}
 
-    const match = faceMatcher.findBestMatch(resized[0].descriptor);
-    const student = studentInfoMap[match.label];
-    const program = student?.course;
+        const displaySize = { width: video.clientWidth, height: video.clientHeight };
+        const resized = faceapi.resizeResults(detections, displaySize);
 
-    let currentUniformStatus = "Scanning...";
-    let currentViolation = "---";
+        if (faceMatcher && resized.length > 0) {
+            const match = faceMatcher.findBestMatch(resized[0].descriptor);
+            const boxColor = match.label === "unknown" ? "#f1c40f" : "#2ecc71";
+            new faceapi.draw.DrawBox(resized[0].detection.box, { label: match.toString(), boxColor }).draw(canvas);
 
-    if (match.label !== "unknown" && student) {
+            updateUI(match, currentUniformStatus, currentViolation);
 
-        const required = programUniformMap[program] || [];
-        const missing = required.filter(p => !detectedParts.includes(p));
-
-
-        const wrongProgram = detectWrongProgram(detectedParts, program);
-
-        if (detectedParts.length === 0) {
-            currentUniformStatus = "No Uniform";
-            currentViolation = "No uniform detected";
-
-        } else if (wrongProgram) {
-            currentUniformStatus = "Wrong Program Uniform";
-            currentViolation = `Wearing ${wrongProgram} uniform instead of ${program}`;
-
-        } else if (missing.length > 0) {
-            currentUniformStatus = "Incomplete Uniform";
-            currentViolation = `Missing: ${missing.join(", ")}`;
-
+            if (match.label !== "unknown") {
+                startCountdown({ name: match.label, status: currentUniformStatus, violation: currentViolation });
+            } else {
+                stopCountdown();
+            }
         } else {
-            currentUniformStatus = "Correct Uniform";
-            currentViolation = "None";
-        }
-    }
-
-    const boxColor = match.label === "unknown" ? "#f1c40f" : "#2ecc71";
-
-    new faceapi.draw.DrawBox(resized[0].detection.box, {
-        label: match.toString(),
-        boxColor
-    }).draw(canvas);
-
-    updateUI(match, currentUniformStatus, currentViolation);
-
-    if (match.label !== "unknown") {
-        startCountdown({
-            name: match.label,
-            status: currentUniformStatus,
-            violation: currentViolation
-        });
-    } else {
-        stopCountdown();
-    }
-
-} else {
-    stopCountdown();
-    resetUI();
-
+            stopCountdown();
+            resetUI();
         }
     }, 500);
 });

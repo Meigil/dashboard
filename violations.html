@@ -28,8 +28,70 @@
       font-size: 0.85rem;
       border: 1px solid rgba(255,255,255,0.2);
     }
-    .img-proof {
-      width: 40px; height: 40px; object-fit: cover; border-radius: 5px; cursor: pointer;
+
+
+    #imageModal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+      overflow-y: auto;
+      padding: 60px 20px;
+    }
+
+    .history-container {
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .history-card {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .history-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid #00c6ff;
+      cursor: zoom-in;
+    }
+
+    .history-info { margin-left: 20px; flex-grow: 1; color: white; }
+
+    .close-btn {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      font-size: 35px;
+      color: white;
+      cursor: pointer;
+      z-index: 10000;
+    }
+
+    #zoomModal {
+      display: none;
+      position: fixed;
+      z-index: 10001;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.95);
+      justify-content: center; align-items: center;
+      cursor: zoom-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -39,39 +101,36 @@
 
 <div class="main-content">
   <h1>Uniform Violations</h1>
-  <p class="subtitle">Automatically detected uniform violations and repeat offenders</p>
+  <p class="subtitle">Repeat offenders summary and student history</p>
 
   <div class="filter-box" style="margin-bottom: 20px; display: flex; gap: 10px;">
-    <select class="dark-input" id="violationTypeFilter" style="max-width: 250px;">
-      <option value="">All Violation Types</option>
-      <option value="Incomplete Uniform">Incomplete Uniform</option>
-      <option value="Covered by Jacket">Covered by Jacket</option>
-      <option value="No Uniform">No Uniform</option>
-    </select>
-    <input type="text" id="studentSearch" class="dark-input" placeholder="Search Student ID or Name..." style="max-width: 300px;">
+    <input type="text" id="studentSearch" class="dark-input" placeholder="Search ID, Name, or Program..." style="max-width: 400px;">
   </div>
 
   <div class="table-container">
     <table>
       <thead>
         <tr>
-          <th>Date & Time</th>
-          <th>Photo</th>
           <th>Student ID</th>
           <th>Name</th>
-          <th>Violation Type</th>
+          <th>Program & Year</th>
           <th>Total Records</th>
           <th>Status</th>
+          <th>Action</th>
         </tr>
       </thead>
-      <tbody id="violationTableBody">
-        </tbody>
+      <tbody id="violationTableBody"></tbody>
     </table>
   </div>
 </div>
 
-<div id="imageModal" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center;" onclick="this.style.display='none'">
-    <img id="modalImg" src="" style="max-width:90%; max-height:80%; border: 3px solid #00c6ff; border-radius: 10px;">
+<div id="imageModal">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <div id="modalContent" class="history-container"></div>
+</div>
+
+<div id="zoomModal" onclick="this.style.display='none'">
+    <img id="zoomedImg" src="" style="max-width: 90%; max-height: 90%; border-radius: 10px; border: 3px solid #00c6ff;">
 </div>
 
 <script src="sidebar.js"></script>
@@ -92,7 +151,6 @@
     const db = getFirestore(app);
 
     let allRecords = [];
-
     const q = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
 
     onSnapshot(q, (snapshot) => {
@@ -102,52 +160,55 @@
 
     function renderViolations() {
         const tbody = document.getElementById("violationTableBody");
-        const typeFilter = document.getElementById("violationTypeFilter").value;
         const searchFilter = document.getElementById("studentSearch").value.toLowerCase();
-        
         tbody.innerHTML = "";
 
-        const violationCounts = {};
+        const grouped = {};
+        
         allRecords.forEach(rec => {
             if (rec.status !== "Complete" && rec.studentId) {
-                violationCounts[rec.studentId] = (violationCounts[rec.studentId] || 0) + 1;
+                if (!grouped[rec.studentId]) {
+                    grouped[rec.studentId] = {
+                        name: rec.studentName || "Unknown",
+                        id: rec.studentId,
+                        program: rec.programLevel || "N/A",
+                        logs: []
+                    };
+                }
+                grouped[rec.studentId].logs.push(rec);
             }
         });
 
-        const violationRecords = allRecords.filter(rec => rec.status !== "Complete");
+        Object.values(grouped).forEach(student => {
+            const matchesSearch = student.id.toLowerCase().includes(searchFilter) || 
+                                 student.name.toLowerCase().includes(searchFilter) ||
+                                 student.program.toLowerCase().includes(searchFilter);
 
-        violationRecords.forEach(record => {
-            const studentId = record.studentId || "N/A";
-            const studentName = record.studentName || "Unknown";
-            const vType = record.violationType || "Unknown";
-
-            const matchesType = typeFilter === "" || vType === typeFilter;
-            const matchesSearch = studentId.toLowerCase().includes(searchFilter) || 
-                                studentName.toLowerCase().includes(searchFilter);
-
-            if (matchesType && matchesSearch) {
-                const count = violationCounts[studentId] || 0;
+            if (matchesSearch) {
+                const count = student.logs.length;
                 const isFlagged = count >= 3;
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td>
-                        <div style="font-weight:600;">${record.dateString}</div>
-                        <div style="font-size:0.75rem; opacity:0.6;">${record.timeString}</div>
-                    </td>
-                    <td>
-                        <img src="${record.capturedImage || 'https://via.placeholder.com/40'}" 
-                             class="img-proof" 
-                             onclick="showImage('${record.capturedImage}')">
-                    </td>
-                    <td>${studentId}</td>
-                    <td>${studentName}</td>
-                    <td>${vType}</td>
+                    <td style="color:#00c6ff; font-weight:bold;">${student.id}</td>
+                    <td><strong>${student.name}</strong></td>
+                    <td>${student.program}</td>
                     <td><span class="count-circle" style="${isFlagged ? 'background:#e74c3c' : ''}">${count}</span></td>
+<td>
+    ${isFlagged 
+        ? `<span class="flagged-status">Flagged</span>` 
+        : `<span class="pending-status">Pending</span>`}
+</td>
                     <td>
-                        ${isFlagged 
-                            ? `<span class="flagged-status"><i class="fas fa-exclamation-triangle"></i> Flagged</span>` 
-                            : `<span class="pending-status">Pending</span>`}
+                        <button onclick='viewDetails(${JSON.stringify(student.logs.map(l => ({
+                            date: l.dateString,
+                            time: l.timeString,
+                            img: l.capturedImage,
+                            type: l.violationType
+                        }))).replace(/'/g, "&apos;")}, "${student.name}")' 
+                        style="background:#2d2b6f; border:1px solid #00c6ff; color:white; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:600;">
+                            View Details
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -155,17 +216,48 @@
         });
     }
 
-
-    window.showImage = (src) => {
+    window.viewDetails = (logs, name) => {
         const modal = document.getElementById("imageModal");
-        const modalImg = document.getElementById("modalImg");
-        modal.style.display = "flex";
-        modalImg.src = src;
+        const container = document.getElementById("modalContent");
+
+        let html = `
+            <div style="margin-bottom:30px;">
+                <h2 style="color:white; margin-bottom:5px;">Violation History</h2>
+                <p style="color:#00c6ff; font-weight:bold;">${name}</p>
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
+            </div>
+        `;
+        
+        logs.forEach(log => {
+            html += `
+                <div class="history-card">
+                    <img src="${log.img || 'https://via.placeholder.com/80'}" class="history-img" onclick="zoomImage('${log.img}')">
+                    <div class="history-info">
+                        <div style="color:#f1c40f; font-weight:bold;">${log.type}</div>
+                        <div style="font-size:0.9rem; margin-top:5px; opacity:0.8;">${log.date} | ${log.time}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden"; 
     }
 
-    document.getElementById("violationTypeFilter").addEventListener("change", renderViolations);
-    document.getElementById("studentSearch").addEventListener("input", renderViolations);
+    window.closeModal = () => {
+        document.getElementById("imageModal").style.display = "none";
+        document.body.style.overflow = "auto";
+    }
 
+    window.zoomImage = (src) => {
+        const zoomModal = document.getElementById("zoomModal");
+        const zoomedImg = document.getElementById("zoomedImg");
+        zoomedImg.src = src;
+        zoomModal.style.display = "flex";
+    }
+
+    document.getElementById("studentSearch").addEventListener("input", renderViolations);
 </script>
 </body>
 </html>
