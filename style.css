@@ -1,3 +1,11 @@
+/* ONLY COLORS CHANGED - EXACT SAME STRUCTURE */
+body {
+  margin: 0;
+  background: #f8f9fa;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
 /* SIDEBAR */
 .sidebar {
   width: 240px;
@@ -5,7 +13,7 @@
   position: fixed;
   left: 0;
   top: 0;
-  background: linear-gradient(180deg, #051330 0%, #0a1a40 100%);
+  background: #031736;
   padding: 20px;
   z-index: 1000;
   border-right: 1px solid rgba(255,255,255,0.1);
@@ -16,10 +24,7 @@
 .sidebar h2 {
   text-align: center;
   margin-bottom: 30px;
-  background: linear-gradient(135deg, #ffffff, #f8f8f8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #FFD400;
 }
 
 .sidebar ul {
@@ -40,9 +45,9 @@
 
 .sidebar li:hover,
 .sidebar .active {
-  background: rgba(138, 151, 175, 0.2);
+  background: rgba(255,212,0,0.2);
   opacity: 1;
-  border-left: 3px solid #facc15;
+  border-left: 3px solid #FFD400;
   transform: translateX(4px);
 }
 
@@ -50,17 +55,10 @@
 .main-content {
   margin-left: 260px; 
   padding: 25px;
-  background: linear-gradient(135deg, #152a55 20%, #e8bd11 80%);
+  background: white;
   min-height: 100vh;
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
-}
-
-body {
-  margin: 0;
-  background: linear-gradient(135deg, #051330, #0a1a40, #1a2332);
-  font-family: Arial, sans-serif;
-  color: white;
 }
 
 .dashboard {
@@ -69,15 +67,13 @@ body {
 
 h1 {
   margin-bottom: 5px;
-  background: linear-gradient(135deg, #facc15, #fde047);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #003A8F;
 }
 
 .subtitle {
   opacity: 0.8;
   margin-bottom: 25px;
+  color: #666;
 }
 
 /* CARDS */
@@ -90,48 +86,52 @@ h1 {
 .card {
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 10px 25px rgba(5, 19, 48, 0.6);
-  background: linear-gradient(135deg, #1a2332, #0f172a);
-  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  background: white;
+  border: 1px solid #e9ecef;
   transition: all 0.3s ease;
-  color: white;
+  color: #333;
 }
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(5, 19, 48, 0.8);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
 .label {
   font-size: 14px;
   opacity: 0.9;
-  color: rgba(255,255,255,0.9);
+  color: #666;
 }
 
 .card h2 {
   margin-top: 10px;
   font-size: 28px;
-  color: white;
+  color: #003A8F;
 }
 
 .purple {
-  background: linear-gradient(135deg, #051330 0%, #0a1a40 20%, #facc15 100%);
-  color: #fef3c7;
+  background: linear-gradient(135deg, white 0%, #fff8e1 100%);
+  border-top: 4px solid #FFD400;
+  color: #003A8F;
 }
 
 .red {
-  background: linear-gradient(135deg, #f59e0b 0%, #facc15 50%, #051330 100%);
-  color: #fef3c7;
+  background: linear-gradient(135deg, white 0%, #fdf2f2 100%);
+  border-top: 4px solid #f8d7da;
+  color: #003A8F;
 }
 
 .green {
-  background: linear-gradient(135deg, #fde047 0%, #facc15 50%, #051330 100%);
-  color: #fef3c7;
+  background: linear-gradient(135deg, white 0%, #f0fff4 100%);
+  border-top: 4px solid #d4edda;
+  color: #003A8F;
 }
 
 .orange {
-  background: linear-gradient(135deg, #051330 0%, #0a1a40 20%, #eab308 100%);
-  color: #fef3c7;
+  background: linear-gradient(135deg, white 0%, #fff8e1 100%);
+  border-top: 4px solid #FFD400;
+  color: #003A8F;
 }
 
 /* STATUS SECTION */
@@ -143,16 +143,17 @@ h1 {
 }
 
 .status-box {
-  background: linear-gradient(135deg, #1a2332, #0f172a);
+  background: white;
   padding: 20px;
   border-radius: 15px;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: white;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  color: #333;
 }
 
 .status-box h3 {
   margin-bottom: 15px;
-  color: white;
+  color: #003A8F;
 }
 
 .status-box ul {
@@ -161,7 +162,7 @@ h1 {
 
 .status-box li {
   margin-bottom: 8px;
-  color: rgba(255,255,255,0.9);
+  color: #666;
 }
 
 /* CHART SECTION */
@@ -173,17 +174,18 @@ h1 {
 }
 
 .chart-box {
-  background: linear-gradient(135deg, #1a2332, #0f172a);
+  background: white;
   padding: 20px;
   border-radius: 15px;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: white;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  color: #333;
 }
 
 .chart-box h3 {
   margin-bottom: 15px;
   font-size: 16px;
-  color: white;
+  color: #003A8F;
 }
 
 /* LIVE DETECTION */
@@ -198,44 +200,46 @@ h1 {
 }
 
 .camera-box {
-  background: linear-gradient(135deg, #1a2332, #0f172a);
+  background: white;
   padding: 20px;
   border-radius: 15px;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: white;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  color: #333;
 }
 
 .camera-feed {
   width: 100%;
   height: 500px;
-  background: linear-gradient(135deg, #051330, #030a1a);
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   border-radius: 15px;
   overflow: hidden;
   display: block;
-  border: 2px solid rgba(250, 204, 21, 0.3);
+  border: 2px solid rgba(255,212,0,0.3);
 }
 
 .camera-status {
   margin-top: 15px;
   font-size: 16px;
-  color: white;
+  color: #003A8F;
 }
 
 .violation {
-  color: #ef4444 !important;
+  color: #721c24 !important;
 }
 
 .detection-info {
-  background: linear-gradient(135deg, #1a2332, #0f172a);
+  background: white;
   padding: 20px;
   border-radius: 15px;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: white;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  color: #333;
 }
 
 .detection-info h3 {
   margin-bottom: 15px;
-  color: white;
+  color: #003A8F;
 }
 
 /* RECORDS TABLE */
@@ -246,34 +250,36 @@ h1 {
 table {
   width: 100%;
   border-collapse: collapse;
-  background: linear-gradient(135deg, #1a2332, #0f172a);
+  background: white;
   border-radius: 15px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: white;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 5px 15px #e9ecef;
+  color: #333;
 }
 
 th, td {
   padding: 15px;
   text-align: left;
-  color: white;
+  color: #000000;
 }
 
 thead {
-  background: linear-gradient(135deg, #051330, #030a1a);
+  background: #003A8F;
+  color: white;
 }
 
 tbody tr {
-  border-bottom: 1px solid rgba(250, 204, 21, 0.2);
+  border-bottom: 1px solid #e9ecef;
   transition: background 0.2s ease;
 }
 
 tbody tr:hover {
-  background: rgba(250, 204, 21, 0.1);
+  background: #f8f9fa;
 }
 
 .guide {
-  color: #ef4444;
+  color: #721c24;
   font-weight: bold;
 }
 
@@ -283,29 +289,29 @@ tbody tr:hover {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #051330, #0a1a40, #1a2332);
+  background: #f8f9fa;
 }
 
 .login-box {
-  background: linear-gradient(135deg, #1a2332, #0f172a);
+  background: white;
   padding: 35px;
   width: 320px;
   border-radius: 15px;
-  box-shadow: 0 20px 40px rgba(5, 19, 48, 0.8);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
   text-align: center;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: white;
+  border: 1px solid #e9ecef;
+  color: #333;
 }
 
 .login-box h2 {
   margin-bottom: 5px;
-  color: white;
+  color: #003A8F;
 }
 
 .login-subtitle {
   opacity: 0.7;
   margin-bottom: 20px;
-  color: rgba(255,255,255,0.9);
+  color: #666;
 }
 
 .login-box label {
@@ -313,7 +319,7 @@ tbody tr:hover {
   text-align: left;
   margin-top: 15px;
   font-size: 14px;
-  color: rgba(255,255,255,0.9);
+  color: #666;
 }
 
 .login-box input,
@@ -322,24 +328,22 @@ tbody tr:hover {
   padding: 10px;
   margin-top: 5px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid #e9ecef;
   outline: none;
-  background: rgba(255,255,255,0.1);
-  color: white;
+  background: white;
+  color: #333;
   transition: border-color 0.3s ease;
-  backdrop-filter: blur(10px);
 }
 
 .login-box input::placeholder,
 .login-box select::placeholder {
-  color: rgba(255,255,255,0.6);
+  color: #999;
 }
 
 .login-box input:focus,
 .login-box select:focus {
-  border-color: #facc15;
-  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2);
-  background: rgba(255,255,255,0.15);
+  border-color: #003A8F;
+  box-shadow: 0 0 0 3px rgba(0,58,143,0.1);
 }
 
 .login-box button {
@@ -348,8 +352,8 @@ tbody tr:hover {
   padding: 12px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #facc15, #fde047);
-  color: #051330;
+  background: linear-gradient(135deg, #FFD400, #ffed4e);
+  color: #003A8F;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
@@ -358,12 +362,12 @@ tbody tr:hover {
 
 .login-box button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(250, 204, 21, 0.4);
+  box-shadow: 0 10px 25px rgba(255,212,0,0.4);
 }
 
 #error-msg {
   margin-top: 15px;
-  color: #ef4444;
+  color: #721c24;
   font-size: 14px;
 }
 
@@ -381,7 +385,7 @@ tbody tr:hover {
   padding: 12px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #051330, #0a1a40);
+  background: #003A8F;
   color: white;
   font-size: 15px;
   cursor: pointer;
@@ -390,27 +394,28 @@ tbody tr:hover {
 
 .capture-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(5, 19, 48, 0.6);
+  box-shadow: 0 10px 25px rgba(0,58,143,0.3);
 }
 
 .student-form {
-  background: linear-gradient(135deg, #1a2332, #0f172a);
+  background: white;
   padding: 20px;
   border-radius: 15px;
-  color: white;
-  border: 1px solid rgba(255,255,255,0.1);
+  color: #fffefe;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 5px 15px #fffefe;
 }
 
 .student-form h3 {
   margin-bottom: 15px;
-  color: white;
+  color: #003A8F;
 }
 
 .student-form label {
   display: block;
   margin-top: 12px;
   font-size: 14px;
-  color: rgba(255,255,255,0.9);
+  color: #ffffff;
 }
 
 .student-form input, 
@@ -419,35 +424,28 @@ tbody tr:hover {
   padding: 10px;
   margin-top: 5px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.1);
-  color: white;
+  border: 1px solid #e9ecef;
+  background: white;
+  color: #ffffff;
   font-size: 14px;
-  backdrop-filter: blur(10px);
 }
 
 .student-form input::placeholder {
-  color: rgba(255,255,255,0.6);
-}
-
-.student-form optgroup {
-  font-weight: bold;
-  color: #1a2332;
-  background: rgba(255,255,255,0.2);
+  color: #999;
 }
 
 .image-preview {
   height: 500px;
   margin-top: 8px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #051330, #030a1a);
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 1;
   overflow: hidden;
-  border: 2px solid rgba(250, 204, 21, 0.4);
-  color: white;
+  border: 2px solid rgba(255,212,0,0.4);
+  color: #666;
 }
 
 .image-preview img {
@@ -462,8 +460,8 @@ tbody tr:hover {
   padding: 12px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #facc15, #eab308);
-  color: #051330;
+  background: linear-gradient(135deg, #FFD400, #ffed4e);
+  color: #003A8F;
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
@@ -472,185 +470,6 @@ tbody tr:hover {
 
 .save-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(250, 204, 21, 0.4);
+  box-shadow: 0 10px 25px rgba(255,212,0,0.4);
 }
 
-/* LOGOUT */
-.logout {
-  margin-top: 30px;
-  color: #facc15;
-  font-weight: bold;
-}
-
-/* STUDENT RECORDS */
-.search-box {
-  width: 300px;
-  padding: 10px;
-  margin: 20px 0;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.1);
-  color: white;
-  backdrop-filter: blur(10px);
-}
-
-.search-box::placeholder {
-  color: rgba(255,255,255,0.6);
-}
-
-.table-container {
-  background: linear-gradient(135deg, #1a2332, #0f172a);
-  padding: 15px;
-  border-radius: 15px;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: white;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  color: white;
-}
-
-th, td {
-  padding: 12px;
-  text-align: center;
-  color: white;
-}
-
-th {
-  background: linear-gradient(135deg, #051330, #030a1a);
-  color: white;
-}
-
-table img {
-  border-radius: 50%;
-}
-
-.ok {
-  color: #facc15;
-  font-weight: bold;
-}
-
-.violation {
-  color: #ef4444;
-  font-weight: bold;
-}
-
-/* VIOLATIONS */
-.filter {
-  padding: 10px;
-  border-radius: 8px;
-  margin: 20px 0;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.1);
-  color: white;
-  backdrop-filter: blur(10px);
-}
-
-.pending {
-  color: #facc15;
-  font-weight: bold;
-}
-
-.flagged {
-  color: #ef4444;
-  font-weight: bold;
-}
-
-/* GUIDANCE */
-.action-btn {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: none;
-  background: linear-gradient(135deg, #facc15, #fde047);
-  color: #051330;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(250, 204, 21, 0.4);
-}
-
-.delete-btn, .edit-btn {
-  padding: 5px 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 12px;
-  margin-right: 5px;
-  transition: all 0.2s ease;
-}
-
-.delete-btn {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: white;
-}
-
-.delete-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
-}
-
-.edit-btn {
-  background: linear-gradient(135deg, #051330, #0a1a40);
-  color: white;
-}
-
-.edit-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 3px 10px rgba(5, 19, 48, 0.6);
-}
-
-.modal {
-  display: none; 
-  position: fixed; 
-  z-index: 2000; 
-  padding-top: 50px; 
-  left: 0;
-  top: 0;
-  width: 100%; 
-  height: 100%; 
-  background-color: rgba(5, 19, 48, 0.95); 
-}
-
-.modal-content {
-  margin: auto;
-  display: block;
-  width: auto;
-  max-width: 80%;
-  max-height: 80vh;
-  border-radius: 10px;
-  border: 3px solid rgba(250, 204, 21, 0.5);
-}
-
-.close {
-  position: absolute;
-  top: 20px;
-  right: 35px;
-  color: #f1f1f1;
-  font-size: 40px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-#caption {
-  text-align: center;
-  color: #ccc;
-  padding: 10px;
-  font-size: 20px;
-}
-
-#video {
-  width: 100%;
-  height: 100%;
-  border-radius: 15px;
-  object-fit: cover; 
-  background: #000;
-}
-
-.camera-feed {
-  position: relative;

@@ -8,19 +8,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --bg-dark: #0a1a40;
-      --box-bg: #0a1a40;
-      --accent-purple: #2f4068;
-      --accent-neon: #facc15;
-      --accent-blue: #facc15;
-      --accent-orange: #facc15;
+      --bg-dark: #003A8F;
+      --box-bg: white;
+      --accent-purple: #003A8F;
+      --accent-neon: #FFD400;
+      --accent-blue: #FFD400;
+      --accent-orange: #FFD400;
     }
 
     .attendance-page {
       margin: 0;
-      background: linear-gradient(135deg, var(--bg-dark), #2f4068);
+      background: linear-gradient(135deg, #f8f9fa, white);
       min-height: 100vh;
-      color: white;
+      color: #333;
       font-family: 'Segoe UI', sans-serif;
     }
 
@@ -43,7 +43,7 @@
       background: var(--box-bg);
       padding: 25px;
       border-radius: 15px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
       display: flex;
       flex-direction: column;
       position: relative;
@@ -59,7 +59,8 @@
       right: 20px;
       top: 20px;
       font-size: 40px;
-      opacity: 0.2;
+      opacity: 0.1;
+      color: #003A8F;
     }
 
     .stat-card .label { 
@@ -67,12 +68,14 @@
       opacity: 0.8; 
       text-transform: uppercase; 
       letter-spacing: 1px; 
+      color: #666;
     }
 
     .stat-card .value { 
       font-size: 36px; 
       font-weight: bold; 
       margin-top: 10px; 
+      color: #333;
     }
 
     .stat-card.purple { border-color: var(--accent-neon); }
@@ -90,23 +93,24 @@
       grid-template-columns: 2fr 1.2fr 1fr 1fr auto;
       gap: 15px;
       align-items: flex-end;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
 
     .filter-group { display: flex; flex-direction: column; gap: 8px; }
-    .filter-group label { font-size: 12px; color: rgba(255,255,255,0.7); }
+    .filter-group label { font-size: 12px; color: #666; }
 
     .dark-input {
-      background: #2f4068;
-      border: 1px solid #3d3b8e;
-      color: white;
+      background: white;
+      border: 1px solid #e9ecef;
+      color: #333;
       padding: 12px;
       border-radius: 8px;
       outline: none;
     }
 
     .export-btn {
-      background: linear-gradient(135deg, var(--accent-blue), #0072ff);
-      color: white;
+      background: linear-gradient(135deg, var(--accent-blue), #ffed4e);
+      color: #003A8F;
       border: none;
       padding: 12px 20px;
       border-radius: 8px;
@@ -122,24 +126,24 @@
       background: var(--box-bg);
       border-radius: 15px;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     }
 
     table { width: 100%; border-collapse: collapse; }
-    thead { background: #2d2b6f; }
-    th { padding: 18px; text-align: left; font-size: 13px; color: var(--accent-blue); text-transform: uppercase; }
-    td { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    thead { background: #003A8F; }
+    th { padding: 18px; text-align: left; font-size: 13px; color: white; text-transform: uppercase; }
+    td { padding: 16px; border-bottom: 1px solid #e9ecef; color: #333; }
 
     .badge-present {
-      background: rgba(0, 176, 155, 0.1);
-      color: #00b09b;
+      background: rgba(255,212,0,0.1);
+      color: #FFD400;
       padding: 6px 14px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: bold;
-      border: 1px solid #00b09b;
+      border: 1px solid #FFD400;
     }
-  </style>
+</style>
 </head>
 <body class="attendance-page">
 
