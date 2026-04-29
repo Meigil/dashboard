@@ -24,6 +24,8 @@ const resId = document.getElementById("resId");
 const resProgram = document.getElementById("resProgram"); 
 const resStatus = document.getElementById("resStatus");
 const resViolation = document.getElementById("resViolation");
+const resViolationCount = document.getElementById("resViolationCount");
+const resOffenseCategory = document.getElementById("resOffenseCategory");
 const resMatch = document.getElementById("resMatch");
 const resTime = document.getElementById("resTime");
 const resDate = document.getElementById("resDate");
@@ -41,7 +43,7 @@ const studentInfoMap = {};
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const csitUniform = [
     "BSCS and BSIT polo",
-    "BSCS and BSIT pants",
+    "BSCS and BSIT and BSHM pants",
     "College STI lanyard",
     "black shoes"
 ];
@@ -256,58 +258,61 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence >= 0.30) {
+        if (pred.confidence < 0.90) return;
 
-            detectedParts.push(pred.class);
+        if (isTodayWashday()) {
+            const allowedLanyards = [
+                "College STI lanyard",
+                "SHS STI lanyard"
+            ];
 
-            const x = pred.x - pred.width / 2;
-            const y = pred.y - pred.height / 2;
+            if (!allowedLanyards.includes(pred.class)) return;
+        }
 
-            ctx.strokeStyle = "#00c6ff"; 
-            ctx.lineWidth = 3;
-            ctx.strokeRect(x, y, pred.width, pred.height);
+        detectedParts.push(pred.class);
 
-            ctx.fillStyle = "#00c6ff";
-            const text = `${pred.class.toUpperCase()} ${Math.round(pred.confidence * 100)}%`;
-            const textWidth = ctx.measureText(text).width;
-            ctx.fillRect(x - 1.5, y - 25, textWidth + 10, 25); 
+        const x = pred.x - pred.width / 2;
+        const y = pred.y - pred.height / 2;
 
-            ctx.fillStyle = "#000000"; 
-            ctx.font = "bold 14px Inter, Arial";
-            ctx.fillText(text, x + 4, y - 7);
+        ctx.strokeStyle = "#00c6ff";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, y, pred.width, pred.height);
 
-            // ===== CROP UNIFORM AREA =====
-            const tempUniform = document.createElement("canvas");
-            tempUniform.width = pred.width;
-            tempUniform.height = pred.height;
+        ctx.fillStyle = "#00c6ff";
+        const text = `${pred.class.toUpperCase()} ${Math.round(pred.confidence * 100)}%`;
+        const textWidth = ctx.measureText(text).width;
+        ctx.fillRect(x - 1.5, y - 25, textWidth + 10, 25);
 
-            const uctx = tempUniform.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 14px Inter, Arial";
+        ctx.fillText(text, x + 4, y - 7);
 
-            uctx.drawImage(
-                video,
-                x,
-                y,
-                pred.width,
-                pred.height,
-                0,
-                0,
-                pred.width,
-                pred.height
-            );
+        const tempUniform = document.createElement("canvas");
+        tempUniform.width = pred.width;
+        tempUniform.height = pred.height;
 
-            // ===== EXTRACT DESCRIPTOR =====
-            const uniformDetection = await faceapi
-                .detectSingleFace(tempUniform)
-                .withFaceLandmarks()
-                .withFaceDescriptor();
+        const uctx = tempUniform.getContext("2d");
 
-            if (uniformDetection) {
+        uctx.drawImage(
+            video,
+            x,
+            y,
+            pred.width,
+            pred.height,
+            0,
+            0,
+            pred.width,
+            pred.height
+        );
 
-                const program = compareUniform(uniformDetection.descriptor);
+        const uniformDetection = await faceapi
+            .detectSingleFace(tempUniform)
+            .withFaceLandmarks()
+            .withFaceDescriptor();
 
-                console.log("Uniform Match Program:", program);
-
-            }
+        if (uniformDetection) {
+            const program = compareUniform(uniformDetection.descriptor);
+            console.log("Uniform Match Program:", program);
         }
     });
 
@@ -322,10 +327,12 @@ if (faceMatcher && detections.length > 0) {
 
 if (isTodayWashday()) {
 
-    const hasLanyard = detectedParts.includes("College STI lanyard");
+    const hasLanyard =
+    detectedParts.includes("College STI lanyard") ||
+    detectedParts.includes("SHS STI lanyard");
 
     if (hasLanyard) {
-        currentUniformStatus = "Washday Allowed";
+        currentUniformStatus = "WASHDAY (Civilian Clothes Allowed)";
         currentViolation = "None";
     } else {
         currentUniformStatus = "No Lanyard";
@@ -348,7 +355,7 @@ if (isTodayWashday()) {
             const boxColor = match.label === "unknown" ? "#f1c40f" : "#2ecc71";
             new faceapi.draw.DrawBox(resized[0].detection.box, { label: match.toString(), boxColor }).draw(canvas);
 
-            updateUI(match, currentUniformStatus, currentViolation);
+            await updateUI(match, currentUniformStatus, currentViolation);
 
             if (match.label !== "unknown") {
                 startCountdown({ name: match.label, status: currentUniformStatus, violation: currentViolation });
@@ -410,22 +417,87 @@ function compareUniform(desc) {
  return "Unknown";
 }
 
-function updateUI(match, status, violation) {
+async function getViolationData(studentId) {
+    if (!studentId) {
+        return {
+            count: 0,
+            category: "---"
+        };
+    }
+
+    const q = query(
+        collection(db, "attendance"),
+        where("studentId", "==", studentId)
+    );
+
+    const snapshot = await getDocs(q);
+
+    const violationLogs = snapshot.docs.filter(doc => {
+        const data = doc.data();
+        return data.violationType && data.violationType !== "None";
+    });
+
+    const count = violationLogs.length;
+
+const category = getOffenseCategory(count);
+
+    return { count, category };
+}
+function getOffenseCategory(count) {
+    if (count === 0) {
+        return "No Record";
+    }
+
+    if (count === 1) {
+        return "1st Offense - Verbal Warning (spoken reminder)";
+    }
+
+    if (count === 2) {
+        return "2nd Offense - Written Reprimand (formal written warning)";
+    }
+
+    return "3rd Offense - Written Reprimand / Corrective Action (suspension for at least 3 school days and up to 7 school days)";
+}
+async function updateUI(match, status, violation) {
     const student = studentInfoMap[match.label];
     const now = new Date();
 
+    const violationData = await getViolationData(student?.studentId);
+
+    let displayCount = violationData.count;
+
+if (violation !== "None") {
+    displayCount += 1;
+}
+
+const displayCategory = getOffenseCategory(displayCount);
+
     resName.innerHTML = `<strong>Student Name:</strong> ${match.label}`;
     resId.innerHTML = `<strong>Student ID:</strong> ${student?.studentId || "---"}`;
-    
 
-    const progStr = student ? `${student.course} - ${student.yearLevel}` : "---";
-    if (resProgram) resProgram.innerHTML = `<strong>Program / Year:</strong> ${progStr}`;
+    const progStr = student
+        ? `${student.course} - ${student.yearLevel}`
+        : "---";
+
+    if (resProgram)
+        resProgram.innerHTML = `<strong>Program / Year:</strong> ${progStr}`;
 
     resStatus.innerHTML = `<strong>Uniform Status:</strong> ${status}`;
     resViolation.innerHTML = `<strong>Violation Type:</strong> ${violation}`;
+
+    if (resViolationCount)
+        resViolationCount.innerHTML =
+`<strong>Total Violations:</strong> ${displayCount}`;
+
+
+    if (resOffenseCategory)
+       resOffenseCategory.textContent = displayCategory;
+
     resMatch.textContent = `${Math.round((1 - match.distance) * 100)}%`;
     resTime.textContent = now.toLocaleTimeString();
-    if (resDate) resDate.textContent = now.toLocaleDateString();
+
+    if (resDate)
+        resDate.textContent = now.toLocaleDateString();
 }
 
 function resetUI() {
@@ -433,6 +505,12 @@ function resetUI() {
     resId.innerHTML = `<strong>Student ID:</strong> ---`;
     if (resProgram) resProgram.innerHTML = `<strong>Program / Year:</strong> ---`;
     resStatus.innerHTML = `<strong>Uniform Status:</strong> Scanning...`;
+       if (resViolationCount)
+        resViolationCount.innerHTML = `<strong>Total Violations:</strong> 0`;
+
+    if (resOffenseCategory)
+        resOffenseCategory.textContent = "---";
+
 }
 
 async function recordAttendance(name, status, violation) {
@@ -463,7 +541,7 @@ async function recordAttendance(name, status, violation) {
 
     const proofImage = tempCanvas.toDataURL("image/jpeg", 0.5);
 
-    await addDoc(collection(db, "attendance"), {
+    await addDoc(collection(db, "attendance "), {
         studentName: name,
         studentId: student?.studentId || "N/A",
         programLevel: student ? `${student.course} - ${student.yearLevel}` : "Unknown",

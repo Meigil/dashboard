@@ -15,8 +15,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 <li class="${currentPage === 'students.html' ? 'active' : ''}" onclick="location.href='students.html'"> Students</li>
                 <li class="${currentPage === 'records.html' ? 'active' : ''}" onclick="location.href='records.html'"> Student Records</li>
                 <li class="${currentPage === 'violations.html' ? 'active' : ''}" onclick="location.href='violations.html'"> Violations</li>
-                <li class="${currentPage === 'uniforms.html' ? 'active' : ''}" onclick="location.href='uniforms.html'"> Upload Uniforms</li>
-                <li class="${currentPage === 'uploaduniform.html' ? 'active' : ''}" onclick="location.href='uploaduniform.html'"> Saved Uniforms</li>
                   <li class="${currentPage === 'guidance.html' ? 'active' : ''}" onclick="location.href='guidance.html'"> Guidance</li>
 <li class="${currentPage === 'washday.html' ? 'active' : ''}" onclick="location.href='washday.html'"> Washday Settings</li>
                 <li class="section-title"> Admin </li>
