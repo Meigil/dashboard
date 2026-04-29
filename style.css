@@ -1,4 +1,4 @@
-/* ONLY COLORS CHANGED - EXACT SAME STRUCTURE */
+
 body {
   margin: 0;
   background: #f8f9fa;
@@ -34,7 +34,7 @@ body {
 }
 
 .sidebar li {
-  padding: 12px 10px;
+  padding: 10px 10px;
   margin-bottom: 10px;
   border-radius: 8px;
   cursor: pointer;
@@ -53,8 +53,8 @@ body {
 
 /* main content */
 .main-content {
-  margin-left: 260px; 
-  padding: 25px;
+  margin-left: 280px; 
+  padding: 50px;
   background: white;
   min-height: 100vh;
   border-top-left-radius: 10px;
@@ -401,7 +401,7 @@ tbody tr:hover {
   background: white;
   padding: 20px;
   border-radius: 15px;
-  color: #fffefe;
+  color: #0b0b0b;
   border: 1px solid #e9ecef;
   box-shadow: 0 5px 15px #fffefe;
 }
@@ -415,7 +415,7 @@ tbody tr:hover {
   display: block;
   margin-top: 12px;
   font-size: 14px;
-  color: #ffffff;
+  color: #0c0c0c;
 }
 
 .student-form input, 
@@ -426,7 +426,7 @@ tbody tr:hover {
   border-radius: 8px;
   border: 1px solid #e9ecef;
   background: white;
-  color: #ffffff;
+  color: #090909;
   font-size: 14px;
 }
 
@@ -472,4 +472,159 @@ tbody tr:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(255,212,0,0.4);
 }
+/* FIXED STUDENT/VIOLATION SEARCH BAR */
+.search-box {
+  margin-bottom: 20px;
+  position: relative;
+  max-width: 400px;
+  display: block !important;
+}
 
+.search-box {
+  width: 100%;
+  padding: 14px 20px 14px 50px !important;
+  background: white !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 25px !important;
+  color: #333 !important;
+  font-size: 0.95rem !important;
+  outline: none !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+  transition: all 0.3s ease !important;
+  display: block !important;
+}
+
+.search-box:focus {
+  border-color: #003A8F !important;
+  box-shadow: 0 0 0 4px rgba(0,58,143,0.1), 0 8px 25px rgba(0,0,0,0.12) !important;
+}
+
+.search-box::placeholder {
+  color: #999 !important;
+  font-weight: 500 !important;
+}
+
+/* ADD ICON (if you want search icon) */
+.search-box::before {
+  content: "🔍";
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  pointer-events: none;
+  z-index: 1;
+}
+/* MATCHING SELECT DROPDOWNS - Student/Violation pages */
+.filter,
+#programFilter,
+#yearFilter,
+.filter-group select {
+width: 100% !important;
+padding: 14px 20px !important;
+background: white !important;
+border: 2px solid #e9ecef !important;
+border-radius: 25px !important;
+color: #333 !important;
+font-size: 0.95rem !important;
+outline: none !important;
+box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+transition: all 0.3s ease !important;
+cursor: pointer !important;
+appearance: none !important;
+background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23666' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
+background-position: right 15px center !important;
+background-repeat: no-repeat !important;
+background-size: 18px !important;
+padding-right: 50px !important;
+}
+
+
+.filter:focus,
+#programFilter:focus,
+#yearFilter:focus,
+.filter-group select:focus {
+border-color: #003A8F !important;
+box-shadow: 0 0 0 4px rgba(0,58,143,0.1), 0 8px 25px rgba(0,0,0,0.12) !important;
+}
+
+
+.filter-group label {
+display: block !important;
+margin-bottom: 8px !important;
+font-weight: 600 !important;
+color: #003A8F !important;
+font-size: 0.9rem !important;
+text-transform: uppercase !important;
+letter-spacing: 0.5px !important;
+}
+
+
+/* FILTER CONTAINER */
+.filters-container {
+display:flex !important;
+gap:20px !important;
+margin-bottom:30px !important;
+flex-wrap:wrap !important;
+}
+
+.filter-group{
+flex:1 !important;
+min-width:280px !important;
+}
+
+
+/* VIOLATION PAGE - FIXED SEARCH BAR (#studentSearch + .dark-input) */
+#studentSearch,
+.dark-input {
+margin-bottom: 20px !important;
+position: relative !important;
+max-width: 400px !important;
+width: 100% !important;
+padding: 14px 20px 14px 50px !important;
+background: white !important;
+border: 2px solid #e9ecef !important;
+border-radius: 25px !important;
+color: #333 !important;
+font-size: 0.95rem !important;
+outline: none !important;
+box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+transition: all 0.3s ease !important;
+display: block !important;
+}
+
+
+#studentSearch:focus,
+.dark-input:focus {
+border-color: #003A8F !important;
+box-shadow: 0 0 0 4px rgba(0,58,143,0.1), 0 8px 25px rgba(0,0,0,0.12) !important;
+}
+
+
+#studentSearch::placeholder,
+.dark-input::placeholder {
+color: #999 !important;
+font-weight: 500 !important;
+}
+
+
+/* VIOLATION PAGE ICON */
+#studentSearch::before {
+content: "🔍";
+position: absolute;
+left: 20px;
+top: 50%;
+transform: translateY(-50%);
+font-size: 1.1rem;
+pointer-events: none;
+z-index: 1;
+}
+
+
+/* FILTER BOX */
+.filter-box {
+display: flex !important;
+gap: 20px !important;
+align-items: center !important;
+margin-bottom: 30px !important;
+}
