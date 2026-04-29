@@ -147,7 +147,8 @@
             <th>Name</th>
             <th>Program/Year</th>
             <th>Total Violations</th>
-            <th>Recommendation</th>
+            <th>Offense Category</th>
+            <th>Violation Evidence</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -199,6 +200,22 @@
         processGuidanceData();
     });
 
+    function getOffenseCategory(count) {
+    if (count === 0) {
+        return "No Record";
+    }
+
+    if (count === 1) {
+        return "1st Offense - Verbal Warning (spoken reminder)";
+    }
+
+    if (count === 2) {
+        return "2nd Offense - Written Reprimand (formal written warning)";
+    }
+
+    return "3rd Offense - Written Reprimand / Corrective Action (suspension for at least 3 school days and up to 7 school days)";
+}
+
     function processGuidanceData() {
         const tbody = document.getElementById("guidanceTableBody");
         const noRecordsMsg = document.getElementById("noRecords");
@@ -235,28 +252,31 @@
                 if (nameMatch || idMatch) {
                     visibleCount++;
                     const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td style="font-weight:bold; color:#00c6ff;">${student.id}</td>
-                        <td>${student.name}</td>
-                        <td>${student.program}</td>
-                        <td><span class="guidance-badge">${count} Violations</span></td>
-                        <td>
-                          <button onclick='viewDetails(${JSON.stringify(student.logs.map(l => ({
-                              date: l.dateString,
-                              time: l.timeString,
-                              img: l.capturedImage,
-                              type: l.violationType
-                          }))).replace(/'/g, "&apos;")}, "${student.name}", "${student.program}")' 
-                          style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; padding:5px 10px; border-radius:4px; cursor:pointer;">
-                            View Images
-                          </button>
-                        </td>
-                        <td>
-                          <button class="action-btn" onclick="markCounseled('${student.id}')">
-                            Mark as Counseled
-                          </button>
-                        </td>
-                    `;
+const offense = getOffenseCategory(count);
+
+tr.innerHTML = `
+    <td style="font-weight:bold; color:#00c6ff;">${student.id}</td>
+    <td>${student.name}</td>
+    <td>${student.program}</td>
+    
+    <td><span class="guidance-badge">${count} Violations</span></td>
+    <td style="text-align: right; padding-right: 20px;">${offense}</td>
+    <td>
+      <button onclick='viewDetails(${JSON.stringify(student.logs.map(l => ({
+          date: l.dateString,
+          time: l.timeString,
+          img: l.capturedImage,
+          type: l.violationType
+      }))).replace(/'/g, "&apos;")}, "${student.name}", "${student.program}")'>
+        View Images
+      </button>
+    </td>
+    <td>
+      <button class="action-btn" onclick="markCounseled('${student.id}')">
+        Mark as Counseled
+      </button>
+    </td>
+`;
                     tbody.appendChild(tr);
                 }
             }
@@ -289,8 +309,8 @@
                          onclick="zoomImage('${log.img}')">
                     <div class="history-info">
                         <div style="color: #f1c40f; font-weight: bold; font-size: 1.1rem;">${log.type}</div>
-                        <div style="margin-top: 8px; color: white; opacity: 0.9;">Date: ${log.date}</div>
-                        <div style="color: white; opacity: 0.6; font-size: 0.9rem;">Time: ${log.time}</div>
+<div style="margin-top: 8px; color: #333; font-weight: 500;">Date: ${log.date}</div>
+<div style="color: #666; font-size: 0.9rem;">Time: ${log.time}</div>
                     </div>
                 </div>
             `;

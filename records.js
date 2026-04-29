@@ -57,6 +57,10 @@ function renderTable(data) {
     tbody.innerHTML = "";
 
     data.forEach(record => {
+
+            if (!record.violationType || record.violationType.toLowerCase() === "none") {
+        return;
+    }
         const statusClass = record.status === "Complete" ? "ok" : "violation";
 
         const photoHtml = record.capturedImage 
