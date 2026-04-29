@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", function() {
     const sidebarContainer = document.querySelector('.sidebar');
     
@@ -19,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <li class="${currentPage === 'uniforms.html' ? 'active' : ''}" onclick="location.href='uniforms.html'"> Upload Uniforms</li>
                 <li class="${currentPage === 'uploaduniform.html' ? 'active' : ''}" onclick="location.href='uploaduniform.html'"> Saved Uniforms</li>
                   <li class="${currentPage === 'guidance.html' ? 'active' : ''}" onclick="location.href='guidance.html'"> Guidance</li>
-
+<li class="${currentPage === 'washday.html' ? 'active' : ''}" onclick="location.href='washday.html'"> Washday Settings</li>
                 <li class="section-title"> Admin </li>
                 <li class="logout" onclick="logout()"> Log Out</li>
             </ul>

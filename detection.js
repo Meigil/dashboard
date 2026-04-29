@@ -13,8 +13,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const ROBOFLOW_API_KEY = "d8519Lg0M6jF4CCVWa7T"; 
-const ROBOFLOW_MODEL = "my-first-project-f1ky7/1"; 
+const ROBOFLOW_API_KEY = "piXsPj0mzK5X2dpeK0gq"; 
+const ROBOFLOW_MODEL = "uk-f5s8z/1"; 
 const ROBOFLOW_URL = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
 const video = document.getElementById("video");
@@ -114,6 +114,19 @@ function evaluateUniform(detectedParts, program) {
     };
 } 
 
+let washDays = [];
+
+function loadWashdaysFromLocal() {
+    const saved = JSON.parse(localStorage.getItem("washdays") || "[]");
+    washDays = saved;
+}
+
+function isTodayWashday() {
+    const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
+    return washDays.includes(today);
+}
+
+loadWashdaysFromLocal();
 Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri("./models"),
     faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
@@ -188,9 +201,19 @@ function triggerReview(data) {
 
 document.getElementById("btnConfirm").onclick = async () => {
     if (lastDetectedData) {
-        await recordAttendance(lastDetectedData.name, lastDetectedData.status, lastDetectedData.violation);
-        alert("Attendance Recorded!");
-        resetSystem();
+        const success = await recordAttendance(
+            lastDetectedData.name, 
+            lastDetectedData.status, 
+            lastDetectedData.violation
+        );
+
+        if (success) {
+            alert("Attendance Recorded!");
+            resetSystem();
+        } else {
+            
+            resetSystem();
+        }
     }
 };
 
@@ -233,7 +256,7 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence >= 0.90) {
+        if (pred.confidence >= 0.30) {
 
             detectedParts.push(pred.class);
 
@@ -297,11 +320,25 @@ if (faceMatcher && detections.length > 0) {
     program = student?.course;
 }
 
-const result = evaluateUniform(detectedParts, program);
+if (isTodayWashday()) {
 
-currentUniformStatus = result.status;
-currentViolation = result.violation;
-}
+    const hasLanyard = detectedParts.includes("College STI lanyard");
+
+    if (hasLanyard) {
+        currentUniformStatus = "Washday Allowed";
+        currentViolation = "None";
+    } else {
+        currentUniformStatus = "No Lanyard";
+        currentViolation = "Lanyard Required (Washday)";
+    }
+
+} else {
+
+    const result = evaluateUniform(detectedParts, program);
+    currentUniformStatus = result.status;
+    currentViolation = result.violation;
+
+}}
 
         const displaySize = { width: video.clientWidth, height: video.clientHeight };
         const resized = faceapi.resizeResults(detections, displaySize);
@@ -322,7 +359,7 @@ currentViolation = result.violation;
             stopCountdown();
             resetUI();
         }
-    }, 500);
+    }, 1000);
 });
 
 function stopCountdown() {
@@ -414,7 +451,7 @@ async function recordAttendance(name, status, violation) {
 
     if (!querySnapshot.empty) {
         alert("You have already submitted your attendance today.");
-        return; 
+        return false; 
     }
 
     const tempCanvas = document.createElement("canvas");
@@ -437,6 +474,5 @@ async function recordAttendance(name, status, violation) {
         violationType: violation,
         capturedImage: proofImage  
     });
-
-    alert("Attendance Recorded!");
-}
+return true;
+} 

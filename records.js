@@ -43,7 +43,7 @@ function updateUI() {
         const matchesCourse = selectedCourse ? progLevel.includes(selectedCourse) : true;
         const matchesYear = selectedYear ? progLevel.includes(selectedYear) : true;
         const matchesDate = filterDateStr ? record.dateString === filterDateStr : true;
-
+ const hasViolation = record.violationType && record.violationType !== "None";
         return matchesSearch && matchesCourse && matchesYear && matchesDate;
     });
 

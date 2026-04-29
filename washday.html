@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Washday </title>
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+        body {
+            display: flex;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        /* SIDEBAR FIX */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            background-color: #1a1c24; 
+            z-index: 100;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 900px; 
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .description {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+
+        .day-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .day-item {
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            padding: 20px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fff;
+        }
+
+        .day-item:hover {
+            border-color: #2196f3;
+            background-color: #f0f7ff;
+        }
+
+        .day-item input {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .day-item label {
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        .day-item.active {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+            color: #1976d2;
+        }
+
+        .day-item.active label {
+            color: #1976d2;
+        }
+
+
+        .action-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 25px;
+        }
+
+        .save-btn {
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .save-btn:hover {
+            background-color: #1565c0;
+        }
+
+        #statusMsg {
+            font-weight: bold;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar"></div>
+
+<div class="main-content">
+    <div class="container">
+        <h2 style="color: #2c3e50; margin-bottom: 8px;">Washday Schedule</h2>
+        <p style="color: #666; font-size: 0.95rem; margin-top: 0;">
+            Select the days for washday attire. On these days, the system will only check the <b>Lanyard</b>.
+        </p>
+
+            <div class="day-grid" id="dayGrid">
+                </div>
+
+            <div class="action-area">
+                <button class="save-btn" onclick="saveWashdays()">SAVE </button>
+                <div id="statusMsg"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="sidebar.js"></script>
+    <script>
+        const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        const dayGrid = document.getElementById("dayGrid");
+        days.forEach(day => {
+            dayGrid.innerHTML += `
+                <div class="day-item" id="item-${day}" onclick="toggleCheckbox('${day}')">
+                    <input type="checkbox" id="${day}" value="${day}" class="day-checkbox" 
+                           onclick="event.stopPropagation(); updateStyle('${day}')">
+                    <label for="${day}">${day}</label>
+                </div>
+            `;
+        });
+
+
+        function toggleCheckbox(day) {
+            const cb = document.getElementById(day);
+            cb.checked = !cb.checked;
+            updateStyle(day);
+        }
+
+        function updateStyle(day) {
+            const cb = document.getElementById(day);
+            const item = document.getElementById(`item-${day}`);
+            if(cb.checked) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        }
+
+
+        window.onload = () => {
+            const saved = JSON.parse(localStorage.getItem("washdays") || "[]");
+            saved.forEach(day => {
+                const cb = document.getElementById(day);
+                if(cb) {
+                    cb.checked = true;
+                    updateStyle(day);
+                }
+            });
+        };
+
+        function saveWashdays() {
+            const selected = Array.from(document.querySelectorAll('.day-checkbox:checked'))
+                                  .map(cb => cb.value);
+            
+            localStorage.setItem("washdays", JSON.stringify(selected));
+            
+            const msg = document.getElementById("statusMsg");
+            msg.textContent = "Successfully Saved!";
+            
+            setTimeout(() => { msg.textContent = ""; }, 3000);
+        }
+    </script>
+</body>
+</html>
