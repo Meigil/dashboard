@@ -13,8 +13,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const ROBOFLOW_API_KEY = "piXsPj0mzK5X2dpeK0gq"; 
-const ROBOFLOW_MODEL = "uk-f5s8z/2"; 
+const ROBOFLOW_API_KEY = "J12kAyCPuGPDJG5aGy0P"; 
+const ROBOFLOW_MODEL = "my-first-project-qumwc/1"; 
 const ROBOFLOW_URL = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
 const video = document.getElementById("video");
