@@ -136,7 +136,15 @@
 <script src="sidebar.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { 
+  getFirestore, 
+  collection, 
+  query, 
+  orderBy, 
+  onSnapshot,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
@@ -157,8 +165,7 @@
         allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderViolations();
     });
-
-    function renderViolations() {
+async function renderViolations() {
         const tbody = document.getElementById("violationTableBody");
         const searchFilter = document.getElementById("studentSearch").value.toLowerCase();
         tbody.innerHTML = "";
@@ -166,7 +173,7 @@
         const grouped = {};
         
         allRecords.forEach(rec => {
-            if (rec.status !== "Complete" && rec.studentId) {
+    if (rec.status !== "Complete Uniform" && rec.studentId)       {
                 if (!grouped[rec.studentId]) {
                     grouped[rec.studentId] = {
                         name: rec.studentName || "Unknown",
@@ -179,14 +186,23 @@
             }
         });
 
-        Object.values(grouped).forEach(student => {
+  for (const student of Object.values(grouped)) {
             const matchesSearch = student.id.toLowerCase().includes(searchFilter) || 
                                  student.name.toLowerCase().includes(searchFilter) ||
                                  student.program.toLowerCase().includes(searchFilter);
+if (matchesSearch) {
 
-            if (matchesSearch) {
-                const count = student.logs.length;
-                const isFlagged = count >= 3;
+const lastCounseled = student.logs
+    .map(log => log.counseledAt ? new Date(log.counseledAt) : null)
+    .filter(Boolean)
+    .sort((a, b) => b - a)[0];
+
+    const activeLogs = lastCounseled
+        ? student.logs.filter(log => log.timestamp?.toDate?.() > lastCounseled)
+        : student.logs;
+
+    const count = activeLogs.length;
+    const isFlagged = count >= 3;
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
@@ -213,7 +229,7 @@
                 `;
                 tbody.appendChild(tr);
             }
-        });
+               }
     }
 
     window.viewDetails = (logs, name) => {

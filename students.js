@@ -141,7 +141,12 @@ function renderStudents(snapshot) {
           <td><input type="checkbox" class="student-checkbox" data-id="${s.docId}" onchange="updateSelectedCount()"></td>
           <td><img src="${s.imageBase64 || 'default.jpg'}" width="40" height="40" style="border-radius:5px; object-fit:cover; cursor:pointer"></td>
           <td>${s.studentId}</td>
-          <td>${s.fullName}</td>
+       <td>
+  ${s.firstName || ""} 
+  ${s.middleName || ""} 
+  ${s.lastName || ""} 
+  ${s.suffix || ""}
+</td>
           <td>
             <button class="edit-btn">Edit</button>
             <button class="delete-btn">Delete</button>

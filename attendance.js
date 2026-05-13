@@ -61,15 +61,26 @@ function updateStats(filterDateStr, filteredData) {
   const todayCountElem = document.getElementById("todayCount");
   const filterMatchElem = document.getElementById("filterMatchCount");
 
+
+  const now = new Date();
+  const todayStr = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+
+
+  const filteredCount = filteredData.length;
+
+
+  const todayCount = allRecords.filter(r => r.dateString === todayStr).length;
+
+
   if (filterDateStr) {
     todayLabel.innerHTML = `Presents on ${filterDateStr}`;
   } else {
     todayLabel.innerHTML = `Today's Present`;
   }
 
-  const count = filteredData.length;
-  if (todayCountElem) todayCountElem.textContent = count;
-  if (filterMatchElem) filterMatchElem.textContent = count;
+
+  if (todayCountElem) todayCountElem.textContent = todayCount;
+  if (filterMatchElem) filterMatchElem.textContent = filteredCount;
 }
 
 function renderTable(dataArray) {
@@ -79,7 +90,7 @@ function renderTable(dataArray) {
   if (dataArray.length === 0) {
     list.innerHTML = `
       <tr>
-        <td colspan="4" style="text-align: center; padding: 60px; opacity: 0.5;">
+        <td colspan="5" style="text-align: center; padding: 60px; opacity: 0.5;">
           <i class="fas fa-calendar-times" style="font-size: 40px; margin-bottom: 15px; display: block;"></i>
           <p style="font-size: 16px;">No attendance records found for this selection.</p>
         </td>
@@ -87,23 +98,34 @@ function renderTable(dataArray) {
     return;
   }
 
-  dataArray.forEach(data => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>
-        <div style="font-weight:bold">${data.dateString}</div>
-        <div style="font-size:11px; opacity:0.6">${data.timeString}</div>
-      </td>
-      <td>
-        <div style="font-weight:bold">${data.studentName}</div>
-        <div style="font-size:12px; opacity:0.5">${data.studentId}</div>
-      </td>
-      <td>${data.programLevel || "N/A"}</td>
-      <td><span class="badge-present">PRESENT</span></td>
-    `;
-    list.appendChild(row);
-  });
-}
+ dataArray.forEach(data => {
+
+  const photoHtml = data.capturedImage
+    ? `<img src="${data.capturedImage}" class="attendance-photo" onclick="window.openModal('${data.capturedImage}', '${data.studentName}')">`
+    : `<i class="fas fa-image" style="opacity:.2;font-size:20px;"></i>`;
+
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td>${photoHtml}</td>
+
+    <td>
+      <div style="font-weight:bold">${data.dateString}</div>
+      <div style="font-size:11px; opacity:0.6">${data.timeString}</div>
+    </td>
+
+    <td>
+      <div style="font-weight:bold">${data.studentName}</div>
+      <div style="font-size:12px; opacity:0.5">${data.studentId}</div>
+    </td>
+
+    <td>${data.programLevel || "N/A"}</td>
+
+    <td><span class="badge-present">PRESENT</span></td>
+  `;
+
+  list.appendChild(row);
+});}
 
 document.getElementById("searchInput").addEventListener("input", applyFilters);
 document.getElementById("courseFilter").addEventListener("change", applyFilters);
@@ -159,3 +181,17 @@ document.getElementById("exportBtn").addEventListener("click", () => {
     link.click();
     URL.revokeObjectURL(url); 
 });
+const imageModal = document.getElementById("photoModal");
+const modalImg = document.getElementById("modalImage");
+
+window.openModal = function(src, name) {
+    imageModal.style.display = "flex";
+    modalImg.src = src;
+};
+
+imageModal.onclick = function(event) {
+    if (event.target === imageModal) {
+        imageModal.style.display = "none";
+        modalImg.src = "";
+    }
+};
