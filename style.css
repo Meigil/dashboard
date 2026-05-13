@@ -257,10 +257,16 @@ table {
   box-shadow: 0 5px 15px #e9ecef;
   color: #333;
 }
-
 th, td {
   padding: 15px;
   text-align: left;
+}
+
+thead th {
+  color: white;
+}
+
+td {
   color: #000000;
 }
 
@@ -472,7 +478,7 @@ tbody tr:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(255,212,0,0.4);
 }
-/* FIXED STUDENT/VIOLATION SEARCH BAR */
+/*  STUDENT/VIOLATION SEARCH BAR */
 .search-box {
   margin-bottom: 20px;
   position: relative;
@@ -504,7 +510,7 @@ tbody tr:hover {
   font-weight: 500 !important;
 }
 
-/* ADD ICON (if you want search icon) */
+
 .search-box::before {
   content: "🔍";
   position: absolute;
@@ -515,7 +521,7 @@ tbody tr:hover {
   pointer-events: none;
   z-index: 1;
 }
-/* MATCHING SELECT DROPDOWNS - Student/Violation pages */
+
 .filter,
 #programFilter,
 #yearFilter,
@@ -560,7 +566,7 @@ letter-spacing: 0.5px !important;
 }
 
 
-/* FILTER CONTAINER */
+
 .filters-container {
 display:flex !important;
 gap:20px !important;
@@ -574,7 +580,7 @@ min-width:280px !important;
 }
 
 
-/* VIOLATION PAGE - FIXED SEARCH BAR (#studentSearch + .dark-input) */
+/* VIOLATION PAGE */
 #studentSearch,
 .dark-input {
 margin-bottom: 20px !important;
@@ -585,7 +591,7 @@ padding: 14px 20px 14px 50px !important;
 background: white !important;
 border: 2px solid #e9ecef !important;
 border-radius: 25px !important;
-color: #333 !important;
+color: #ffffff !important;
 font-size: 0.95rem !important;
 outline: none !important;
 box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
@@ -620,11 +626,21 @@ pointer-events: none;
 z-index: 1;
 }
 
-
 /* FILTER BOX */
 .filter-box {
 display: flex !important;
 gap: 20px !important;
 align-items: center !important;
 margin-bottom: 30px !important;
+}
+
+
+th:nth-child(4),
+td:nth-child(4){
+  min-width: 140px;
+}
+
+.guidance-badge{
+  display: inline-block;
+  white-space: nowrap;
 }
