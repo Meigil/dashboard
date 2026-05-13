@@ -148,6 +148,15 @@
       font-weight: bold;
       border: 1px solid #FFD400;
     }
+    .attendance-photo {
+  width: 65px;
+  height: 65px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #FFD400;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
 </style>
 </head>
 <body class="attendance-page">
@@ -236,6 +245,7 @@
       <table>
         <thead>
           <tr>
+               <th>Photo</th>
             <th>Date & Time</th>
             <th>Student Info</th>
             <th>Program / Year</th>
@@ -246,6 +256,25 @@
       </table>
     </div>
   </div>
+  <div id="photoModal" style="
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.8);
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+">
+  <img id="modalImage" style="
+    max-width:85%;
+    max-height:85%;
+    border-radius:14px;
+    border:2px solid #FFD400;
+  ">
+</div>
 
   <script src="sidebar.js"></script>
   <script type="module" src="attendance.js"></script>

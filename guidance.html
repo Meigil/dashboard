@@ -173,8 +173,16 @@
   
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
+   import { 
+  getFirestore, 
+  collection, 
+  query, 
+  orderBy, 
+  onSnapshot,
+  where,
+  getDocs,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
     const firebaseConfig = {
         apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
         authDomain: "thesissystem-921ef.firebaseapp.com",
@@ -235,7 +243,7 @@
                         logs: []
                     };
                 }
-                studentStats[rec.studentId].logs.push(rec);
+       studentStats[rec.studentId].logs.push(rec);
             }
         });
 
@@ -243,7 +251,20 @@
         
         for (const id in studentStats) {
             const student = studentStats[id];
-            const count = student.logs.length;
+            const lastCounseled = student.logs
+    .map(log => log.counseledAt)
+    .filter(Boolean)
+    .sort()
+    .pop();
+
+const activeLogs = lastCounseled
+    ? student.logs.filter(log =>
+        !log.counseledAt || log.timestamp?.toDate?.() > new Date(lastCounseled)
+      )
+    : student.logs;
+
+const count = activeLogs.length;
+    
 
             if (count >= 3) {
                 const nameMatch = student.name.toLowerCase().includes(searchTerm);
@@ -333,11 +354,31 @@ tr.innerHTML = `
         zoomModal.style.display = "flex";
     }
 
-    window.markCounseled = (id) => {
-        if(confirm(`Confirm counseling for Student ID: ${id}?`)) {
-            alert("Record updated locally.");
-        }
-    };
+window.markCounseled = async (id) => {
+    if (!confirm(`Confirm counseling for Student ID: ${id}?`)) return;
+
+    try {
+        const q = query(
+            collection(db, "attendance"),
+            where("studentId", "==", id)
+        );
+
+        const snapshot = await getDocs(q);
+
+        const updates = snapshot.docs.map(docSnap =>
+            updateDoc(docSnap.ref, {
+                counseledAt: new Date().toISOString()
+            })
+        );
+
+        await Promise.all(updates);
+
+        alert("Counseling recorded. Violation count reset.");
+    } catch (err) {
+        console.error(err);
+        alert("Failed.");
+    }
+};
   </script>
 </body>
 </html> 

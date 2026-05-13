@@ -61,7 +61,13 @@ uploadInput.addEventListener("change", () => {
 
 window.saveStudent = async function() {
   const studentId = document.getElementById("studentId").value.trim();
-  const fullName = document.getElementById("fullName").value.trim();
+const firstName = document.getElementById("firstName").value.trim();
+const middleName = document.getElementById("middleName").value.trim();
+const lastName = document.getElementById("lastName").value.trim();
+const suffix = document.getElementById("suffix").value.trim();
+const fullName = [firstName, middleName, lastName, suffix]
+  .filter(Boolean)
+  .join(" ");
   const course = document.getElementById("course").value;
   const yearLevel = document.getElementById("yearLevel").value;
 
@@ -74,7 +80,11 @@ window.saveStudent = async function() {
 
   try {
     await setDoc(doc(db, "students", studentId), {
-      studentId, fullName, course, yearLevel,
+      studentId, firstName,
+middleName,
+lastName,
+suffix,
+fullName, course, yearLevel,
       imageBase64: imageData,
       createdAt: serverTimestamp()
     });
@@ -153,7 +163,7 @@ startBulkBtn.addEventListener("click", () => {
               const base64 = await convertToBase64(photo);
               await setDoc(doc(db, "students", sId), {
                 studentId: sId,
-                fullName: s.fullName || "N/A",
+               fullName: `${s.firstName || ""} ${s.middleName || ""} ${s.lastName || ""} ${s.suffix || ""}`.trim(),
                 course: s.course || "N/A",
                 yearLevel: s.yearLevel || "N/A",
                 imageBase64: base64,

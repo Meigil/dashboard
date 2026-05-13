@@ -14,10 +14,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const ROBOFLOW_API_KEY = "J12kAyCPuGPDJG5aGy0P"; 
-const ROBOFLOW_MODEL = "my-first-project-qumwc/1"; 
+const ROBOFLOW_MODEL = "my-first-project-qumwc/2"; 
+
 const ROBOFLOW_URL = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
-const video = document.getElementById("video");
+const video = document.getElementById("video");     
 const canvas = document.getElementById("overlay");
 const resName = document.getElementById("resName");
 const resId = document.getElementById("resId");
@@ -43,30 +44,30 @@ const studentInfoMap = {};
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const csitUniform = [
     "BSCS and BSIT polo",
-    "BSCS and BSIT and BSHM pants",
+    "Pants",
     "College STI lanyard",
-    "black shoes"
+    "Shoes"
 ];
 
 const bacommUniform = [
-    "BACOMM blazer",
+    "Coat",
     "BACOMM blouse",
-    "BACOMM pants",
+    "Pants",
     "BACOMM polo",
     "BACOMM skirt",
     "BACOMM tie",
-    "black shoes"
+    "Shoes"
 ];
 
 const SHSUniform = [
     "SHS blazer",
     "SHS blouse",
-    "SHS pants",
+    "Pants",
     "SHS polo",
     "SHS skirt",
     "SHS tie",
     "SHS vest",
-    "black shoes"
+    "Shoes"
 ];
 
 const programUniformMap = {
@@ -189,7 +190,7 @@ function startCountdown(data) {
             playBeep(880, 0.5);
             triggerReview(data);
         }
-    }, 1000);
+    }, 2000);
 }
 
 function triggerReview(data) {
@@ -258,7 +259,7 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence < 0.90) return;
+        if (pred.confidence < 0.70) return;
 
         if (isTodayWashday()) {
             const allowedLanyards = [
@@ -332,7 +333,7 @@ if (isTodayWashday()) {
     detectedParts.includes("SHS STI lanyard");
 
     if (hasLanyard) {
-        currentUniformStatus = "WASHDAY (Civilian Clothes Allowed)";
+        currentUniformStatus = "Complete Uniform";
         currentViolation = "None";
     } else {
         currentUniformStatus = "No Lanyard";
@@ -432,16 +433,30 @@ async function getViolationData(studentId) {
 
     const snapshot = await getDocs(q);
 
-    const violationLogs = snapshot.docs.filter(doc => {
-        const data = doc.data();
-        return data.violationType && data.violationType !== "None";
+    const records = snapshot.docs.map(doc => doc.data());
+
+
+    const lastCounseled = records
+        .map(r => r.counseledAt)
+        .filter(Boolean)
+        .sort()
+        .pop();
+
+    const activeViolations = records.filter(r => {
+        if (!r.violationType || r.violationType === "None") return false;
+
+        if (!lastCounseled) return true;
+
+        const recordDate = r.timestamp?.toDate?.();
+        return recordDate && recordDate > new Date(lastCounseled);
     });
 
-    const count = violationLogs.length;
+    const count = activeViolations.length;
 
-const category = getOffenseCategory(count);
-
-    return { count, category };
+    return {
+        count,
+        category: getOffenseCategory(count)
+    };
 }
 function getOffenseCategory(count) {
     if (count === 0) {
@@ -541,7 +556,7 @@ async function recordAttendance(name, status, violation) {
 
     const proofImage = tempCanvas.toDataURL("image/jpeg", 0.5);
 
-    await addDoc(collection(db, "attendance "), {
+    await addDoc(collection(db, "attendance"), {
         studentName: name,
         studentId: student?.studentId || "N/A",
         programLevel: student ? `${student.course} - ${student.yearLevel}` : "Unknown",
