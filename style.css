@@ -644,3 +644,99 @@ td:nth-child(4){
   display: inline-block;
   white-space: nowrap;
 }
+
+.login-body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+
+  background-image: url("./dasmarinas.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.login-box{
+  width: 350px;
+  padding: 30px;
+  border-radius: 20px;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+
+  
+}
+.login-box h1,
+.login-box h2,
+.login-box h3,
+.login-box p,
+.login-box label,
+.login-box span{
+  color: #031736!important;
+}
+
+
+.login-box .input-group label{
+  color: #000 !important;
+  font-weight: 600;
+}
+
+
+.login-box input,
+.login-box select{
+  color: #000 !important;
+}
+
+
+.login-box input::placeholder{
+  color: #555 !important;
+}
+
+
+.login-box button,
+.login-btn{
+  color: #031736 !important;
+  font-weight: bold;
+}
+
+
+.login-box .title,
+.login-box h1{
+  color: #003b95 !important;
+  font-weight: bold;
+}
+
+
+input,
+select,
+option {
+  color: #000 !important;
+}
+
+
+input::placeholder {
+  color: #666 !important;
+  opacity: 1;
+}
+
+
+input[type="date"] {
+  color: #000 !important;
+}
+
+
+select {
+  background-color: #fff;
+  color: #000 !important;
+}
+
+
+.search-input {
+  color: #000 !important;
+}
