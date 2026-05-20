@@ -172,8 +172,13 @@ async function renderViolations() {
 
         const grouped = {};
         
-        allRecords.forEach(rec => {
-    if (rec.status !== "Complete Uniform" && rec.studentId)       {
+allRecords.forEach(rec => {
+
+    const hasViolation =
+        rec.violationType &&
+        rec.violationType !== "None";
+
+    if (hasViolation && rec.studentId) {
                 if (!grouped[rec.studentId]) {
                     grouped[rec.studentId] = {
                         name: rec.studentName || "Unknown",
@@ -197,9 +202,16 @@ const lastCounseled = student.logs
     .filter(Boolean)
     .sort((a, b) => b - a)[0];
 
-    const activeLogs = lastCounseled
-        ? student.logs.filter(log => log.timestamp?.toDate?.() > lastCounseled)
-        : student.logs;
+const activeLogs = lastCounseled
+    ? student.logs.filter(log =>
+          log.timestamp?.toDate?.() > lastCounseled &&
+          log.violationType &&
+          log.violationType !== "None"
+      )
+    : student.logs.filter(log =>
+          log.violationType &&
+          log.violationType !== "None"
+      );
 
     const count = activeLogs.length;
     const isFlagged = count >= 3;
@@ -244,7 +256,9 @@ const lastCounseled = student.logs
             </div>
         `;
         
-        logs.forEach(log => {
+logs
+.sort((a, b) => new Date(b.date) - new Date(a.date))
+.forEach(log => {
             html += `
                 <div class="history-card">
                     <img src="${log.img || 'https://via.placeholder.com/80'}" class="history-img" onclick="zoomImage('${log.img}')">

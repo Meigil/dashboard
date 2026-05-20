@@ -61,7 +61,10 @@ function renderTable(data) {
             if (!record.violationType || record.violationType.toLowerCase() === "none") {
         return;
     }
-        const statusClass = record.status === "Complete" ? "ok" : "violation";
+const statusClass =
+    record.status === "Complete Uniform"
+        ? "ok"
+        : "violation";
 
         const photoHtml = record.capturedImage 
             ? `<img src="${record.capturedImage}" class="img-proof" onclick="window.openModal('${record.capturedImage}', '${record.studentName}')" style="cursor:pointer;">`
@@ -92,7 +95,9 @@ function updateStats(filteredData) {
     const todayLogs = allAttendance.filter(r => r.dateString === todayStr).length;
     document.getElementById("todayCount").textContent = todayLogs;
 
-    const completeCount = filteredData.filter(r => r.status === "Complete").length;
+const completeCount = filteredData.filter(
+    r => r.status === "Complete Uniform"
+).length;
     document.getElementById("completeCount").textContent = completeCount;
 
     const violationCount = filteredData.filter(r => r.status !== "Complete").length;

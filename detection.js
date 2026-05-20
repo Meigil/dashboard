@@ -35,6 +35,7 @@ const countdownOverlay = document.getElementById("countdownOverlay");
 const confirmSection = document.getElementById("confirmSection");
 
 let faceMatcher;
+let isSaving = false;
 let uniformDescriptors = [];
 let isReviewing = false; 
 let timerActive = false;
@@ -50,14 +51,14 @@ const csitUniform = [
 ];
 
 const bacommUniform = [
-    "Coat",
+    "blazer",
     "BACOMM blouse",
     "Pants",
-    "BACOMM polo",
-    "BACOMM skirt",
-    "BACOMM tie",
+    "College STI lanyard",
     "Shoes"
 ];
+
+
 
 const SHSUniform = [
     "SHS blazer",
@@ -66,13 +67,22 @@ const SHSUniform = [
     "SHS polo",
     "SHS skirt",
     "SHS tie",
-    "SHS vest",
+    "SHS vest","SHS STI lanyard",
     "Shoes"
 ];
 
+const bshmUniform = [
+    "Pants",
+    "Shoes",
+    "BSHM Polo",
+    "BSHM vest",
+    "College STI lanyard",
+    "blazer"
+];
 const programUniformMap = {
     "BSCS": csitUniform,
     "BSIT": csitUniform,
+    "BSHM": bshmUniform,
     "BACOMM": bacommUniform,
     "BMMA": bacommUniform,
     "ABM": SHSUniform,
@@ -131,10 +141,10 @@ function isTodayWashday() {
 
 loadWashdaysFromLocal();
 Promise.all([
-    faceapi.nets.tinyFaceDetector.loadFromUri("./models"),
+    faceapi.nets.ssdMobilenetv1.loadFromUri("./models"),
     faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
     faceapi.nets.faceRecognitionNet.loadFromUri("./models"),
-    faceapi.nets.ssdMobilenetv1.loadFromUri("./models")
+
 ]).then(async () => {
     console.log("AI Models Loaded");
     uniformDescriptors = await loadUniforms();
@@ -203,21 +213,23 @@ function triggerReview(data) {
 }
 
 document.getElementById("btnConfirm").onclick = async () => {
+
+    if (isSaving) return;
+
+    isSaving = true;
+
     if (lastDetectedData) {
-        const success = await recordAttendance(
-            lastDetectedData.name, 
-            lastDetectedData.status, 
+
+        await recordAttendance(
+            lastDetectedData.name,
+            lastDetectedData.status,
             lastDetectedData.violation
         );
 
-        if (success) {
-            alert("Attendance Recorded!");
-            resetSystem();
-        } else {
-            
-            resetSystem();
-        }
+        resetSystem();
     }
+
+    isSaving = false;
 };
 
 document.getElementById("btnRetake").onclick = () => { resetSystem(); };
@@ -246,7 +258,7 @@ video.addEventListener("play", () => {
         const base64Image = tempCanvas.toDataURL("image/jpeg").split(",")[1];
 
         const [detections, roboflowRes] = await Promise.all([
-            faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors(),
+           faceapi.detectAllFaces(video, new faceapi.SsdMobilenetv1Options()).withFaceLandmarks().withFaceDescriptors(),
             fetch(ROBOFLOW_URL, { method: "POST", body: base64Image }).then(res => res.json()).catch(() => ({ predictions: [] }))
         ]);
 
@@ -259,7 +271,7 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence < 0.70) return;
+        if (pred.confidence < 0.80) return;
 
         if (isTodayWashday()) {
             const allowedLanyards = [
@@ -531,41 +543,69 @@ function resetUI() {
 async function recordAttendance(name, status, violation) {
     const student = studentInfoMap[name];
     const now = new Date();
-    const dateString = now.toLocaleDateString(); 
-
+    const dateString = now.toLocaleDateString();
 
     const attendanceQuery = query(
         collection(db, "attendance"),
         where("studentId", "==", student?.studentId),
         where("dateString", "==", dateString)
     );
-    
-    const querySnapshot = await getDocs(attendanceQuery);
 
-    if (!querySnapshot.empty) {
-        alert("You have already submitted your attendance today.");
-        return false; 
+    const querySnapshot = await getDocs(attendanceQuery);
+    const alreadyHasAttendance = !querySnapshot.empty;
+if (
+    alreadyHasAttendance &&
+    (violation === "None" || !violation)
+) {
+    alert("Attendance already recorded today.");
+    return false;
+}if (alreadyHasAttendance && violation !== "None") {
+
+    const duplicateViolation = querySnapshot.docs.some(doc => {
+
+        const data = doc.data();
+
+        return data.violationType === violation;
+
+    });
+
+    if (duplicateViolation) {
+
+        alert("Violation already recorded.");
+        return false;
+
     }
+
+}
 
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = video.videoWidth;
     tempCanvas.height = video.videoHeight;
-    const tCtx = tempCanvas.getContext("2d");
 
+    const tCtx = tempCanvas.getContext("2d");
     tCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
 
     const proofImage = tempCanvas.toDataURL("image/jpeg", 0.5);
-
     await addDoc(collection(db, "attendance"), {
         studentName: name,
         studentId: student?.studentId || "N/A",
-        programLevel: student ? `${student.course} - ${student.yearLevel}` : "Unknown",
+        programLevel: student
+            ? `${student.course} - ${student.yearLevel}`
+            : "Unknown",
         timestamp: serverTimestamp(),
         dateString: dateString,
         timeString: now.toLocaleTimeString(),
         status: status,
         violationType: violation,
-        capturedImage: proofImage  
+        capturedImage: proofImage,
+        attendanceOnly: !alreadyHasAttendance
     });
+
+if (alreadyHasAttendance && violation !== "None") {
+    alert("Violation record saved.");
+} else {
+    alert("Attendance Recorded!");
+}
+
 return true;
-} 
+}

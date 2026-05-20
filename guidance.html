@@ -224,38 +224,158 @@
     return "3rd Offense - Written Reprimand / Corrective Action (suspension for at least 3 school days and up to 7 school days)";
 }
 
-    function processGuidanceData() {
-        const tbody = document.getElementById("guidanceTableBody");
-        const noRecordsMsg = document.getElementById("noRecords");
-        const emptyMessage = document.getElementById("emptyMessage");
-        const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
-        
-        tbody.innerHTML = "";
-        const studentStats = {};
+function processGuidanceData() {
 
-        latestRecords.forEach(rec => {
-            if (rec.status !== "Complete" && rec.studentId) {
-                if (!studentStats[rec.studentId]) {
-                    studentStats[rec.studentId] = {
-                        id: rec.studentId,
-                        name: rec.studentName || "Unknown",
-                        program: rec.programLevel || "N/A",
-                        logs: []
-                    };
-                }
-       studentStats[rec.studentId].logs.push(rec);
+    const tbody = document.getElementById("guidanceTableBody");
+    const noRecordsMsg = document.getElementById("noRecords");
+    const emptyMessage = document.getElementById("emptyMessage");
+    const searchTerm = document
+        .getElementById('studentSearch')
+        .value
+        .toLowerCase();
+
+    tbody.innerHTML = "";
+
+    const studentStats = {};
+
+    latestRecords.forEach(rec => {
+
+        // ONLY REAL VIOLATIONS
+        const hasViolation =
+            rec.violationType &&
+            rec.violationType !== "None";
+
+        if (!hasViolation || !rec.studentId) return;
+
+        if (!studentStats[rec.studentId]) {
+
+            studentStats[rec.studentId] = {
+                id: rec.studentId,
+                name: rec.studentName || "Unknown",
+                program: rec.programLevel || "N/A",
+                logs: []
+            };
+
+        }
+
+        studentStats[rec.studentId].logs.push(rec);
+
+    });
+
+    let visibleCount = 0;
+
+    for (const id in studentStats) {
+
+        const student = studentStats[id];
+
+        // latest counseling
+        const lastCounseled = student.logs
+            .map(log => log.counseledAt ? new Date(log.counseledAt) : null)
+            .filter(Boolean)
+            .sort((a, b) => b - a)[0];
+
+        // active violations only
+        const activeLogs = lastCounseled
+            ? student.logs.filter(log =>
+                log.timestamp?.toDate?.() > lastCounseled
+              )
+            : student.logs;
+
+        // REMOVE DUPLICATES
+        const uniqueLogs = [];
+        const seen = new Set();
+
+        activeLogs.forEach(log => {
+
+            const key =
+                log.dateString +
+                log.violationType;
+
+            if (!seen.has(key)) {
+                seen.add(key);
+                uniqueLogs.push(log);
             }
+
         });
 
-        let visibleCount = 0;
-        
-        for (const id in studentStats) {
-            const student = studentStats[id];
-            const lastCounseled = student.logs
-    .map(log => log.counseledAt)
-    .filter(Boolean)
-    .sort()
-    .pop();
+        const count = uniqueLogs.length;
+
+        // only 3+
+        if (count < 3) continue;
+
+        const nameMatch =
+            student.name.toLowerCase().includes(searchTerm);
+
+        const idMatch =
+            student.id.toLowerCase().includes(searchTerm);
+
+        if (!nameMatch && !idMatch) continue;
+
+        visibleCount++;
+
+        const offense = getOffenseCategory(count);
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+            <td style="font-weight:bold; color:#00c6ff;">
+                ${student.id}
+            </td>
+
+            <td>${student.name}</td>
+
+            <td>${student.program}</td>
+
+            <td>
+                <span class="guidance-badge">
+                    ${count} Violations
+                </span>
+            </td>
+
+            <td style="text-align:right; padding-right:20px;">
+                ${offense}
+            </td>
+
+            <td>
+                <button onclick='viewDetails(${JSON.stringify(
+                    uniqueLogs.map(l => ({
+                        date: l.dateString,
+                        time: l.timeString,
+                        img: l.capturedImage,
+                        type: l.violationType
+                    }))
+                ).replace(/'/g, "&apos;")},
+                "${student.name}",
+                "${student.program}")'>
+
+                    View Images
+
+                </button>
+            </td>
+
+            <td>
+                <button class="action-btn"
+                    onclick="markCounseled('${student.id}')">
+
+                    Mark as Counseled
+
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+
+    }
+
+    noRecordsMsg.style.display =
+        visibleCount === 0 ? "block" : "none";
+
+    if (visibleCount === 0 && searchTerm !== "") {
+
+        emptyMessage.innerText =
+            `No results found for "${searchTerm}"`;
+
+    
 
 const activeLogs = lastCounseled
     ? student.logs.filter(log =>
