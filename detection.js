@@ -14,7 +14,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const ROBOFLOW_API_KEY = "J12kAyCPuGPDJG5aGy0P"; 
-const ROBOFLOW_MODEL = "my-first-project-qumwc/2"; 
+const ROBOFLOW_MODEL = "my-first-project-qumwc/5"; 
 
 const ROBOFLOW_URL = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
