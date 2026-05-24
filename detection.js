@@ -13,8 +13,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const ROBOFLOW_API_KEY = "J12kAyCPuGPDJG5aGy0P"; 
-const ROBOFLOW_MODEL = "my-first-project-qumwc/5"; 
+const ROBOFLOW_API_KEY = "4WcRW9pEUuwig5Fg62Nd"; 
+const ROBOFLOW_MODEL = "neww-owbun/1"; 
 
 const ROBOFLOW_URL = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
@@ -44,10 +44,10 @@ let lastDetectedData = null;
 const studentInfoMap = {};
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const csitUniform = [
-    "BSCS and BSIT polo",
-    "Pants",
-    "College STI lanyard",
-    "Shoes"
+    "bsit and bscs polo",
+    "pants",
+    "college sti lanyard",
+    "shoes"
 ];
 
 const bacommUniform = [
@@ -61,14 +61,13 @@ const bacommUniform = [
 
 
 const SHSUniform = [
-    "SHS blazer",
-    "SHS blouse",
-    "Pants",
-    "SHS polo",
-    "SHS skirt",
-    "SHS tie",
-    "SHS vest","SHS STI lanyard",
-    "Shoes"
+
+    "white polo",
+    "blue pants",
+    "shs necktie",
+    "shs vest",
+    "shs sti lanyard",
+    "shoes"
 ];
 
 const bshmUniform = [
@@ -271,7 +270,7 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence < 0.80) return;
+        if (pred.confidence < 0.60) return;
 
         if (isTodayWashday()) {
             const allowedLanyards = [
