@@ -14,7 +14,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const ROBOFLOW_API_KEY = "4WcRW9pEUuwig5Fg62Nd"; 
-const ROBOFLOW_MODEL = "neww-owbun/1"; 
+const ROBOFLOW_MODEL = "neww-owbun/3"; 
 
 const ROBOFLOW_URL = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
@@ -270,7 +270,7 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence < 0.60) return;
+        if (pred.confidence < 0.80) return;
 
         if (isTodayWashday()) {
             const allowedLanyards = [
