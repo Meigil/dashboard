@@ -7,6 +7,74 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   
   <style>
+    .camera-feed {
+  position: relative;
+  overflow: hidden;
+}
+
+.camera-feed video {
+  width: 100%;
+  height: auto;
+  border-radius: 15px;
+}
+
+
+.face-guide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+
+.shoulder-frame {
+
+width:180px;
+height:230px;
+
+border:3px dashed #FFD400;
+
+border-radius:50%;
+
+transition:0.3s;
+
+}
+
+
+.face-ready{
+
+border-color:#00ff00;
+
+}
+
+
+.face-warning{
+
+border-color:red;
+
+}
+
+
+#captureStatus {
+
+  margin-top: 20px;
+
+  background: rgba(0,0,0,0.55);
+
+  color: white;
+
+  padding: 10px 18px;
+
+  border-radius: 20px;
+
+  font-size: 14px;
+
+  text-align:center;
+
+}
     .batch-enrollment {
       margin-top: 40px;
       padding: 25px;
@@ -56,10 +124,18 @@
 
     <div class="capture-container">
       <div class="camera-box">
-        <div class="camera-feed">
-          <video id="video" autoplay playsinline></video>
-          <canvas id="canvas" style="display:none;"></canvas>
-        </div>
+       <div class="camera-feed">
+  <video id="video" autoplay playsinline></video>
+
+  <div class="face-guide">
+    <div class="shoulder-frame"></div>
+    <p id="captureStatus">
+      Position your face inside the frame
+    </p>
+  </div>
+
+  <canvas id="canvas" style="display:none;"></canvas>
+</div>
         <button class="capture-btn" onclick="captureImage()">Capture Image</button>
       </div>
 
@@ -175,6 +251,7 @@
 </style>
 
   <script src="sidebar.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <script type="module" src="capture.js"></script>
 </body>
 </html>

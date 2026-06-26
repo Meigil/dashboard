@@ -26,20 +26,202 @@ const startBulkBtn = document.getElementById("startBulkBtn");
 const bulkStatus = document.getElementById("bulkStatus");
 const csvList = document.getElementById("csvList");
 const imageList = document.getElementById("imageList");
-
+const frame = document.querySelector(".shoulder-frame");
+const status = document.getElementById("captureStatus");
 let currentImages = []; 
 
 
-navigator.mediaDevices.getUserMedia({ video: true })
-  .then(stream => video.srcObject = stream)
-  .catch(err => console.error("Camera error:", err));
+async function startCamera(){
+
+try {
+
+await faceapi.nets.tinyFaceDetector.loadFromUri(
+"https://justadudewhohacks.github.io/face-api.js/models"
+);
+
+
+const stream = await navigator.mediaDevices.getUserMedia({
+    video:true
+});
+
+
+video.srcObject = stream;
+
+
+detectFace();
+
+
+}
+
+catch(err){
+
+console.error("Camera Error:",err);
+
+}
+
+}
+
+
+async function detectFace(){
+
+setInterval(async()=>{
+
+
+const detection = await faceapi.detectSingleFace(
+video,
+new faceapi.TinyFaceDetectorOptions()
+);
+
+
+
+if(detection){
+
+
+const box = detection.box;
+
+
+// center ng mukha
+const faceCenterX = box.x + box.width / 2;
+const faceCenterY = box.y + box.height / 2;
+
+
+
+// video size
+const videoWidth = video.videoWidth;
+const videoHeight = video.videoHeight;
+
+
+
+// oval area estimate
+const ovalWidth = 180;
+const ovalHeight = 230;
+
+
+const ovalCenterX = videoWidth / 2;
+const ovalCenterY = videoHeight / 2;
+
+
+
+const insideOval =
+
+faceCenterX > ovalCenterX - ovalWidth/2 &&
+faceCenterX < ovalCenterX + ovalWidth/2 &&
+
+faceCenterY > ovalCenterY - ovalHeight/2 &&
+faceCenterY < ovalCenterY + ovalHeight/2;
+
+
+
+if(insideOval){
+
+
+frame.classList.remove(
+"face-warning"
+);
+
+
+frame.classList.add(
+"face-ready"
+);
+
+
+status.innerText =
+"Face aligned - Ready to capture";
+
+
+}
+
+else{
+
+
+frame.classList.remove(
+"face-ready"
+);
+
+
+frame.classList.add(
+"face-warning"
+);
+
+
+status.innerText =
+"Place your face inside the frame";
+
+
+}
+
+
+}
+
+else{
+
+
+frame.classList.remove(
+"face-ready"
+);
+
+
+frame.classList.add(
+"face-warning"
+);
+
+
+status.innerText =
+"Face not detected";
+
+
+}
+
+
+
+},500);
+
+
+}
+
+
+startCamera();
 
 window.captureImage = function() {
+
+  if(!frame.classList.contains("face-ready")){
+
+    alert("Please position your face inside the frame before capturing.");
+
+    return;
+
+  }
+
+
   canvas.width = video.videoWidth;
+
   canvas.height = video.videoHeight;
-  canvas.getContext("2d").drawImage(video, 0, 0);
-  const imageData = canvas.toDataURL("image/jpeg", 0.6);
-  imagePreview.innerHTML = `<img src="${imageData}" width="100%" style="border-radius:10px;">`;
+
+
+  canvas.getContext("2d")
+  .drawImage(video,0,0);
+
+
+
+  const imageData = canvas.toDataURL(
+    "image/jpeg",
+    0.6
+  );
+
+
+  imagePreview.innerHTML = `
+
+  <img 
+  src="${imageData}" 
+  width="100%" 
+  style="border-radius:10px;">
+
+  `;
+
+
+  status.innerText =
+  "Image captured successfully";
+
 };
 
 uploadInput.addEventListener("change", () => {
