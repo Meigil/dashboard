@@ -1,5 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { getFirestore, collection, getDocs, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { renderSidebar } from "./sidebar.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
@@ -11,7 +14,44 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app); 
 const db = getFirestore(app);
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const email = user.email ? user.email.toLowerCase().trim() : "";
+
+  try {
+    const userDocRef = doc(db, "users", email);
+    const userSnap = await getDoc(userDocRef);
+
+    if (userSnap.exists()) {
+      const userRole = userSnap.data().role;
+
+   
+      if (userRole !== "admin") {
+        alert("Your account role is not authorized.");
+        window.location.href = "login.html";
+        return; 
+      }
+
+      renderSidebar(userRole);
+
+    } else {
+      console.error("User record not found.");
+      alert("Your account role is not authorized.");
+      window.location.href = "login.html";
+    }
+
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    window.location.href = "login.html";
+  }
+});
 
 const ROBOFLOW_API_KEY = "4WcRW9pEUuwig5Fg62Nd"; 
 const ROBOFLOW_MODEL = "neww-owbun/4"; 

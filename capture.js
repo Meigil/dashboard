@@ -1,5 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+import { renderSidebar } from "./sidebar.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBmVP7R5XnvqobdxiRv-LpHswhCCVRggX4",
@@ -11,9 +14,44 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
 
+  const email = user.email ? user.email.toLowerCase().trim() : "";
+
+  try {
+    const userDocRef = doc(db, "users", email);
+    const userSnap = await getDoc(userDocRef);
+
+    if (userSnap.exists()) {
+      const userRole = userSnap.data().role;
+
+   
+      if (userRole !== "admin") {
+        alert("Your account role is not authorized.");
+        window.location.href = "login.html";
+        return; 
+      }
+
+      renderSidebar(userRole);
+
+    } else {
+      console.error("User record not found.");
+      alert("Your account role is not authorized.");
+      window.location.href = "login.html";
+    }
+
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    window.location.href = "login.html";
+  }
+});
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const imagePreview = document.getElementById("imagePreview");
@@ -30,198 +68,71 @@ const frame = document.querySelector(".shoulder-frame");
 const status = document.getElementById("captureStatus");
 let currentImages = []; 
 
-
 async function startCamera(){
-
-try {
-
-await faceapi.nets.tinyFaceDetector.loadFromUri(
-"https://justadudewhohacks.github.io/face-api.js/models"
-);
-
-
-const stream = await navigator.mediaDevices.getUserMedia({
-    video:true
-});
-
-
-video.srcObject = stream;
-
-
-detectFace();
-
-
+  try {
+    await faceapi.nets.tinyFaceDetector.loadFromUri(
+      "https://justadudewhohacks.github.io/face-api.js/models"
+    );
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    detectFace();
+  } catch(err) {
+    console.error("Camera Error:", err);
+  }
 }
-
-catch(err){
-
-console.error("Camera Error:",err);
-
-}
-
-}
-
 
 async function detectFace(){
+  setInterval(async () => {
+    const detection = await faceapi.detectSingleFace(
+      video,
+      new faceapi.TinyFaceDetectorOptions()
+    );
+    if(detection){
+      const box = detection.box;
+      const faceCenterX = box.x + box.width / 2;
+      const faceCenterY = box.y + box.height / 2;
+      const videoWidth = video.videoWidth;
+      const videoHeight = video.videoHeight;
+      const ovalWidth = 180;
+      const ovalHeight = 230;
+      const ovalCenterX = videoWidth / 2;
+      const ovalCenterY = videoHeight / 2;
+      const insideOval =
+        faceCenterX > ovalCenterX - ovalWidth/2 &&
+        faceCenterX < ovalCenterX + ovalWidth/2 &&
+        faceCenterY > ovalCenterY - ovalHeight/2 &&
+        faceCenterY < ovalCenterY + ovalHeight/2;
 
-setInterval(async()=>{
-
-
-const detection = await faceapi.detectSingleFace(
-video,
-new faceapi.TinyFaceDetectorOptions()
-);
-
-
-
-if(detection){
-
-
-const box = detection.box;
-
-
-// center ng mukha
-const faceCenterX = box.x + box.width / 2;
-const faceCenterY = box.y + box.height / 2;
-
-
-
-// video size
-const videoWidth = video.videoWidth;
-const videoHeight = video.videoHeight;
-
-
-
-// oval area estimate
-const ovalWidth = 180;
-const ovalHeight = 230;
-
-
-const ovalCenterX = videoWidth / 2;
-const ovalCenterY = videoHeight / 2;
-
-
-
-const insideOval =
-
-faceCenterX > ovalCenterX - ovalWidth/2 &&
-faceCenterX < ovalCenterX + ovalWidth/2 &&
-
-faceCenterY > ovalCenterY - ovalHeight/2 &&
-faceCenterY < ovalCenterY + ovalHeight/2;
-
-
-
-if(insideOval){
-
-
-frame.classList.remove(
-"face-warning"
-);
-
-
-frame.classList.add(
-"face-ready"
-);
-
-
-status.innerText =
-"Face aligned - Ready to capture";
-
-
+      if(insideOval){
+        frame.classList.remove("face-warning");
+        frame.classList.add("face-ready");
+        status.innerText = "Face aligned - Ready to capture";
+      } else {
+        frame.classList.remove("face-ready");
+        frame.classList.add("face-warning");
+        status.innerText = "Place your face inside the frame";
+      }
+    } else {
+      frame.classList.remove("face-ready");
+      frame.classList.add("face-warning");
+      status.innerText = "Face not detected";
+    }
+  }, 500);
 }
-
-else{
-
-
-frame.classList.remove(
-"face-ready"
-);
-
-
-frame.classList.add(
-"face-warning"
-);
-
-
-status.innerText =
-"Place your face inside the frame";
-
-
-}
-
-
-}
-
-else{
-
-
-frame.classList.remove(
-"face-ready"
-);
-
-
-frame.classList.add(
-"face-warning"
-);
-
-
-status.innerText =
-"Face not detected";
-
-
-}
-
-
-
-},500);
-
-
-}
-
 
 startCamera();
 
 window.captureImage = function() {
-
   if(!frame.classList.contains("face-ready")){
-
     alert("Please position your face inside the frame before capturing.");
-
     return;
-
   }
-
-
   canvas.width = video.videoWidth;
-
   canvas.height = video.videoHeight;
-
-
-  canvas.getContext("2d")
-  .drawImage(video,0,0);
-
-
-
-  const imageData = canvas.toDataURL(
-    "image/jpeg",
-    0.6
-  );
-
-
-  imagePreview.innerHTML = `
-
-  <img 
-  src="${imageData}" 
-  width="100%" 
-  style="border-radius:10px;">
-
-  `;
-
-
-  status.innerText =
-  "Image captured successfully";
-
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  const imageData = canvas.toDataURL("image/jpeg", 0.6);
+  imagePreview.innerHTML = `<img src="${imageData}" width="100%" style="border-radius:10px;">`;
+  status.innerText = "Image captured successfully";
 };
 
 uploadInput.addEventListener("change", () => {
@@ -243,13 +154,11 @@ uploadInput.addEventListener("change", () => {
 
 window.saveStudent = async function() {
   const studentId = document.getElementById("studentId").value.trim();
-const firstName = document.getElementById("firstName").value.trim();
-const middleName = document.getElementById("middleName").value.trim();
-const lastName = document.getElementById("lastName").value.trim();
-const suffix = document.getElementById("suffix").value.trim();
-const fullName = [firstName, middleName, lastName, suffix]
-  .filter(Boolean)
-  .join(" ");
+  const firstName = document.getElementById("firstName").value.trim();
+  const middleName = document.getElementById("middleName").value.trim();
+  const lastName = document.getElementById("lastName").value.trim();
+  const suffix = document.getElementById("suffix").value.trim();
+  const fullName = [firstName, middleName, lastName, suffix].filter(Boolean).join(" ");
   const course = document.getElementById("course").value;
   const yearLevel = document.getElementById("yearLevel").value;
 
@@ -262,11 +171,8 @@ const fullName = [firstName, middleName, lastName, suffix]
 
   try {
     await setDoc(doc(db, "students", studentId), {
-      studentId, firstName,
-middleName,
-lastName,
-suffix,
-fullName, course, yearLevel,
+      studentId, firstName, middleName, lastName, suffix,
+      fullName, course, yearLevel,
       imageBase64: imageData,
       createdAt: serverTimestamp()
     });
@@ -276,7 +182,6 @@ fullName, course, yearLevel,
     alert("Error saving: " + err.message);
   }
 };
-
 
 function formatSize(bytes) {
   if (bytes < 1024) return bytes + " b";
@@ -345,7 +250,7 @@ startBulkBtn.addEventListener("click", () => {
               const base64 = await convertToBase64(photo);
               await setDoc(doc(db, "students", sId), {
                 studentId: sId,
-               fullName: `${s.firstName || ""} ${s.middleName || ""} ${s.lastName || ""} ${s.suffix || ""}`.trim(),
+                fullName: `${s.firstName || ""} ${s.middleName || ""} ${s.lastName || ""} ${s.suffix || ""}`.trim(),
                 course: s.course || "N/A",
                 yearLevel: s.yearLevel || "N/A",
                 imageBase64: base64,

@@ -15,36 +15,44 @@
     <h1>School Uniform Detection System</h1>
     <p class="subtitle">Real-Time AI Uniform & Facial Recognition Analytics</p>
 
-    <div class="cards">
+<div class="cards">
       <div class="card purple">
         <p class="label">Total Students Scanned</p>
         <h2 id="totalScanned">0</h2>
       </div>
       <div class="card red">
         <p class="label">Uniform Violations</p>
-        <h2 id="totalViolations">137</h2>
+        <h2 id="totalViolations">0</h2>
       </div>
       <div class="card green">
         <p class="label">Proper Uniform Rate</p>
-        <h2 id="complianceRate">89%</h2>
+        <h2 id="complianceRate">0%</h2>
       </div>
       <div class="card orange">
         <p class="label">Guidance Required</p>
-        <h2 id="guidanceCount">24</h2>
+        <h2 id="guidanceCount">0</h2>
       </div>
     </div>
-
     <div class="status-section">
-      <div class="status-box">
-        <h3>Latest Detection</h3>
-        <p id="latestName"><strong>Student:</strong> Scanning...</p>
-        <p id="latestId"><strong>Student ID:</strong> ---</p>
-        <p id="latestProgram"><strong>Program / Year:</strong> ---</p>
-        <p id="latestUniform"><strong>Uniform Status:</strong> Scanning...</p>
-        <p id="latestViolation"><strong>Violation Type:</strong> Scanning...</p>
-        <p><strong>Date:</strong> <span id="resDate">--/--/----</span></p>
-        <p><strong>Time:</strong> <span id="latestTime">--:--</span></p>
-      </div>
+<div class="status-box">
+  <h3>Latest Detection</h3>
+
+  <p id="latestName"><strong>Student:</strong> Scanning...</p>
+  <p id="latestId"><strong>Student ID:</strong> ---</p>
+  <p id="latestProgram"><strong>Program / Year:</strong> ---</p>
+
+
+  <p id="latestUniform"><strong>Uniform Status:</strong> Scanning...</p>
+  <p id="latestViolation"><strong>Violation Type:</strong> Scanning...</p>
+  <p id="latestViolationCount"><strong>Total Violations:</strong> 0</p>
+  <p id="latestOffense"><strong>Offense Category:</strong> ---</p>
+  <p id="latestMatch"><strong>Face Match:</strong> --%</p>
+
+
+
+  <p><strong>Detection Date:</strong> <span id="latestDate">--/--/----</span></p>
+  <p><strong>Detection Time:</strong> <span id="latestTime">--:--:--</span></p>
+</div>
 
       <div class="status-box">
         <h3>System Modules</h3>
@@ -86,27 +94,7 @@
         </thead>
         <tbody>
           <tr>
-            <td>Juan Dela Cruz</td>
-            <td>2023-0012</td>
-            <td> Jacket Covering Uniform</td>
-            <td>3</td>
-            <td class="guide">Guidance Required</td>
-          </tr>
-          <tr>
-            <td>Maria Santos</td>
-            <td>2023-0145</td>
-            <td> No ID </td>
-            <td>2</td>
-            <td>-</td>
-          </tr>
-          <tr>
-            <td>Carlo Reyes</td>
-            <td>2023-0321</td>
-            <td> Proper Uniform</td>
-            <td>0</td>
-            <td>-</td>
-          </tr>
-        </tbody>
+
       </table>
     </div>
 

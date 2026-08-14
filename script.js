@@ -1,17 +1,57 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { renderSidebar } from "./sidebar.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBmVP7XnvqobdxiRv-LpHswhCCVRggX4",
-    authDomain: "thesissystem-921ef.firebaseapp.com",
-    projectId: "thesissystem-921ef",
-    storageBucket: "thesissystem-921ef.firebasestorage.app",
-    messagingSenderId: "62118219774",
-    appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
+  apiKey: "AIzaSyBmVP7R5XnvqobdxiRv-LpHswhCCVRggX4",
+  authDomain: "thesissystem-921ef.firebaseapp.com",
+  projectId: "thesissystem-921ef",
+  storageBucket: "thesissystem-921ef.appspot.com",
+  messagingSenderId: "62118219774",
+  appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
+
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const email = user.email ? user.email.toLowerCase().trim() : "";
+
+  try {
+    const userDocRef = doc(db, "users", email);
+    const userSnap = await getDoc(userDocRef);
+
+    if (userSnap.exists()) {
+      const userRole = userSnap.data().role;
+
+   
+      if (userRole !== "admin") {
+        alert("Your account role is not authorized.");
+        window.location.href = "login.html";
+        return; 
+      }
+
+      renderSidebar(userRole);
+
+    } else {
+      console.error("User record not found.");
+      alert("Your account role is not authorized.");
+      window.location.href = "login.html";
+    }
+
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    window.location.href = "login.html";
+  }
+});
 
 let attendanceChartInstance;
 let complianceChartInstance; 
