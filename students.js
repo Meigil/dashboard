@@ -37,6 +37,7 @@ const noStudentsMsg = document.getElementById("noStudentsMessage");
 const bulkActionBar = document.getElementById("bulkActionBar");
 const selectedCountLabel = document.getElementById("selectedCount");
 
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -52,19 +53,29 @@ onAuthStateChanged(auth, async (user) => {
     if (userSnap.exists()) {
       const userRole = userSnap.data().role;
 
-   
       if (userRole !== "admin") {
-        alert("Your account role is not authorized.");
-        window.location.href = "login.html";
+        Swal.fire({
+          icon: 'error',
+          title: 'Unauthorized',
+          text: 'Your account role is not authorized.',
+          confirmButtonColor: '#003A8F'
+        }).then(() => {
+          window.location.href = "login.html";
+        });
         return; 
       }
 
       renderSidebar(userRole);
 
     } else {
-      console.error("User record not found.");
-      alert("Your account role is not authorized.");
-      window.location.href = "login.html";
+      Swal.fire({
+        icon: 'error',
+        title: 'Unauthorized',
+        text: 'Your account record was not found.',
+        confirmButtonColor: '#003A8F'
+      }).then(() => {
+        window.location.href = "login.html";
+      });
     }
 
   } catch (error) {
@@ -77,8 +88,6 @@ function getCourseLabel(value) {
   const option = document.querySelector(`#programFilter option[value="${value}"]`);
   return option ? option.textContent : value;
 }
-
-
 
 function updateSelectedCount() {
   const checked = document.querySelectorAll('.student-checkbox:checked');
@@ -110,7 +119,6 @@ window.toggleSelectAllVisible = (masterCheckbox) => {
   });
   updateSelectedCount();
 };
-
 
 
 function renderStudents(snapshot) {
@@ -149,7 +157,6 @@ function renderStudents(snapshot) {
     for (const year in grouped[course]) {
       const yearCount = grouped[course][year].length;
 
-
       const h3 = document.createElement("h3");
       h3.className = "year-title";
       h3.dataset.program = course; h3.dataset.year = year;
@@ -185,46 +192,52 @@ function renderStudents(snapshot) {
           <td><input type="checkbox" class="student-checkbox" data-id="${s.docId}" onchange="updateSelectedCount()"></td>
           <td><img src="${s.imageBase64 || 'default.jpg'}" width="40" height="40" style="border-radius:5px; object-fit:cover; cursor:pointer"></td>
           <td>${s.studentId}</td>
-       <td>
-  ${s.firstName || ""} 
-  ${s.middleName || ""} 
-  ${s.lastName || ""} 
-  ${s.suffix || ""}
-</td>
+          <td>
+            ${s.firstName || ""} 
+            ${s.middleName || ""} 
+            ${s.lastName || ""} 
+            ${s.suffix || ""}
+          </td>
           <td>
             <button class="edit-btn">Edit</button>
             <button class="delete-btn">Delete</button>
           </td>
         `;
 
-  
+        // Image View Modal
         tr.querySelector("img").onclick = () => {
           document.getElementById("imageModal").style.display = "block";
           document.getElementById("imgFull").src = s.imageBase64 || "default.jpg";
-          document.getElementById("caption").textContent = s.fullName;
+          document.getElementById("caption").textContent = s.fullName || `${s.firstName} ${s.lastName}`;
         };
 
- 
-        tr.querySelector(".edit-btn").onclick = async () => {
-          const newId = prompt("Edit Student ID:", s.studentId);
-          const newName = prompt("Edit Full Name:", s.fullName);
-          if (!newId || !newName) return;
-
-          if (newId !== s.docId) {
-            await deleteDoc(doc(db, "students", s.docId));
-            await setDoc(doc(db, "students", newId), {
-              ...s,
-              studentId: newId,
-              fullName: newName,
-              docId: newId
-            });
-          } else {
-            await setDoc(doc(db, "students", s.docId), { ...s, fullName: newName });
-          }
+        // Open Edit Modal
+        tr.querySelector(".edit-btn").onclick = () => {
+          openEditModal(s);
         };
 
-        tr.querySelector(".delete-btn").onclick = async () => {
-          if (confirm(`Delete ${s.fullName}?`)) await deleteDoc(doc(db, "students", s.docId));
+        // Single Delete
+        tr.querySelector(".delete-btn").onclick = () => {
+          Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to delete ${s.fullName || s.studentId}.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              await deleteDoc(doc(db, "students", s.docId));
+              Swal.fire({
+                icon: 'success',
+                title: 'Deleted!',
+                text: 'Student has been deleted.',
+                timer: 1500,
+                showConfirmButton: false
+              });
+            }
+          });
         };
 
         tbody.appendChild(tr);
@@ -237,68 +250,223 @@ function renderStudents(snapshot) {
 }
 
 
-document.getElementById("bulkPromoteBtn").onclick = async () => {
-  const newLevel = document.getElementById("promoteToYear").value;
-  if (!newLevel) return alert("Please select a year level.");
-  const selected = document.querySelectorAll('.student-checkbox:checked');
-  if (confirm(`Update ${selected.length} students to ${newLevel}?`)) {
-    const batch = writeBatch(db);
-    selected.forEach(cb => { batch.update(doc(db, "students", cb.dataset.id), { yearLevel: newLevel }); });
-    await batch.commit();
-    alert("Updated successfully!");
+function openEditModal(student) {
+  document.getElementById("editDocId").value = student.docId;
+  document.getElementById("editStudentId").value = student.studentId || "";
+  document.getElementById("editFirstName").value = student.firstName || "";
+  document.getElementById("editMiddleName").value = student.middleName || "";
+  document.getElementById("editLastName").value = student.lastName || "";
+  document.getElementById("editSuffix").value = student.suffix || "";
+  document.getElementById("editStudentModal").style.display = "flex";
+}
+
+window.closeEditModal = () => {
+  document.getElementById("editStudentModal").style.display = "none";
+};
+
+document.getElementById("saveEditBtn").onclick = async () => {
+  const oldDocId = document.getElementById("editDocId").value;
+  const newStudentId = document.getElementById("editStudentId").value.trim();
+  const firstName = document.getElementById("editFirstName").value.trim();
+  const middleName = document.getElementById("editMiddleName").value.trim();
+  const lastName = document.getElementById("editLastName").value.trim();
+  const suffix = document.getElementById("editSuffix").value.trim();
+  const fullName = [firstName, middleName, lastName, suffix].filter(Boolean).join(" ");
+
+  if (!newStudentId || !firstName || !lastName) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Incomplete Details',
+      text: 'Please fill out Student ID, First Name, and Last Name.',
+      confirmButtonColor: '#003A8F'
+    });
+    return;
+  }
+
+  try {
+    const oldDocRef = doc(db, "students", oldDocId);
+    const oldSnap = await getDoc(oldDocRef);
+    const existingData = oldSnap.exists() ? oldSnap.data() : {};
+
+    const updatedPayload = {
+      ...existingData,
+      studentId: newStudentId,
+      firstName,
+      middleName,
+      lastName,
+      suffix,
+      fullName
+    };
+
+    if (newStudentId !== oldDocId) {
+      await deleteDoc(oldDocRef);
+      await setDoc(doc(db, "students", newStudentId), updatedPayload);
+    } else {
+      await setDoc(oldDocRef, updatedPayload);
+    }
+
+    closeEditModal();
+    Swal.fire({
+      icon: 'success',
+      title: 'Updated!',
+      text: 'Student profile updated successfully.',
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+  } catch (error) {
+    console.error("Error updating student:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Update Failed',
+      text: error.message,
+      confirmButtonColor: '#003A8F'
+    });
   }
 };
 
+// BULK ACTIONS
+document.getElementById("bulkPromoteBtn").onclick = async () => {
+  const newLevel = document.getElementById("promoteToYear").value;
+  if (!newLevel) {
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Select Year Level',
+      text: 'Please select a year level from the dropdown.',
+      confirmButtonColor: '#003A8F'
+    });
+  }
+
+  const selected = document.querySelectorAll('.student-checkbox:checked');
+  if (selected.length === 0) {
+    return Swal.fire({
+      icon: 'warning',
+      title: 'No Selection',
+      text: 'Please select at least one student.',
+      confirmButtonColor: '#003A8F'
+    });
+  }
+
+  Swal.fire({
+    title: 'Confirm Level Update',
+    text: `Update ${selected.length} student(s) to ${newLevel}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#003A8F',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, update!'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const batch = writeBatch(db);
+      selected.forEach(cb => { batch.update(doc(db, "students", cb.dataset.id), { yearLevel: newLevel }); });
+      await batch.commit();
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated!',
+        text: 'Students year level updated successfully.',
+        confirmButtonColor: '#003A8F'
+      });
+    }
+  });
+};
 
 document.getElementById("bulkShiftBtn").onclick = async () => {
-
   const newProgram = document.getElementById("shiftToProgram").value;
 
   if (!newProgram) {
-    return alert("Please select a program from the dropdown list.");
+    return Swal.fire({
+      icon: 'warning',
+      title: 'Select Program',
+      text: 'Please select a program from the dropdown list.',
+      confirmButtonColor: '#003A8F'
+    });
   }
 
   const selected = document.querySelectorAll('.student-checkbox:checked');
-
   if (selected.length === 0) {
-    return alert("Please select at least one student to shift.");
+    return Swal.fire({
+      icon: 'warning',
+      title: 'No Selection',
+      text: 'Please select at least one student to shift.',
+      confirmButtonColor: '#003A8F'
+    });
   }
 
-  if (confirm(`Shift ${selected.length} selected students to ${newProgram}?`)) {
-    try {
-      const batch = writeBatch(db);
-      selected.forEach(cb => { 
-        batch.update(doc(db, "students", cb.dataset.id), { 
-          course: newProgram 
-        }); 
-      });
-      
-      await batch.commit();
-      alert("Shifted successfully!");
-      document.getElementById("shiftToProgram").value = "";
-      if(document.getElementById("selectAllCheckbox")) {
-        document.getElementById("selectAllCheckbox").checked = false;
+  Swal.fire({
+    title: 'Confirm Program Shift',
+    text: `Shift ${selected.length} student(s) to ${newProgram}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#003A8F',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, shift!'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const batch = writeBatch(db);
+        selected.forEach(cb => { 
+          batch.update(doc(db, "students", cb.dataset.id), { course: newProgram }); 
+        });
+        
+        await batch.commit();
+        document.getElementById("shiftToProgram").value = "";
+        if(document.getElementById("selectAllCheckbox")) {
+          document.getElementById("selectAllCheckbox").checked = false;
+        }
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Shifted!',
+          text: 'Students shifted program successfully.',
+          confirmButtonColor: '#003A8F'
+        });
+      } catch (error) {
+        console.error("Error shifting students: ", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Shift Failed',
+          text: error.message,
+          confirmButtonColor: '#003A8F'
+        });
       }
-    } catch (error) {
-      console.error("Error shifting students: ", error);
-      alert("An error occurred while shifting students.");
     }
-  }
+  });
 };
-
-
 
 document.getElementById("bulkDeleteBtn").onclick = async () => {
   const selected = document.querySelectorAll('.student-checkbox:checked');
-  if (confirm(`Delete ${selected.length} selected students?`)) {
-    const batch = writeBatch(db);
-    selected.forEach(cb => { batch.delete(doc(db, "students", cb.dataset.id)); });
-    await batch.commit();
-    alert("Deleted successfully!");
+  if (selected.length === 0) {
+    return Swal.fire({
+      icon: 'warning',
+      title: 'No Selection',
+      text: 'Please select at least one student to delete.',
+      confirmButtonColor: '#003A8F'
+    });
   }
+
+  Swal.fire({
+    title: 'Delete Selected Students?',
+    text: `Are you sure you want to delete ${selected.length} student(s)? This action cannot be undone.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete all!'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const batch = writeBatch(db);
+      selected.forEach(cb => { batch.delete(doc(db, "students", cb.dataset.id)); });
+      await batch.commit();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Selected students deleted successfully.',
+        confirmButtonColor: '#003A8F'
+      });
+    }
+  });
 };
-
-
 
 function filterByProgram() {
   const program = document.getElementById("programFilter").value;
@@ -327,9 +495,8 @@ function searchStudents() {
     const id = row.cells[2].innerText.toLowerCase();
     const name = row.cells[3].innerText.toLowerCase();
     const container = row.closest('.table-container');
- 
-    const matchesSearch = id.includes(queryText) || name.includes(queryText);
 
+    const matchesSearch = id.includes(queryText) || name.includes(queryText);
     const matchesFilter = (programFilter === "all" || container.dataset.program === programFilter) &&
                           (yearFilter === "all" || container.dataset.year === yearFilter);
 
@@ -354,7 +521,6 @@ function searchStudents() {
       totalVisible += visibleRows;
     } else {
       container.style.display = "none";
-
       document.querySelectorAll(`.year-title[data-program="${program}"][data-year="${year}"]`).forEach(el => el.style.display = "none");
     }
   });

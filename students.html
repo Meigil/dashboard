@@ -2,25 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Students</title>
+  <title>Students Management</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-  
-
-<script>
-  function logout() {
-    if (confirm("Are you sure you want to log out?")) {
-      location.href = "login.html";
-    }
-  }
-</script>
 
 <div class="sidebar"></div>
 
 <div class="main-content students-page">
-  <h1>Students</h1>
-  <p class="subtitle">Students grouped by program</p>
+  <h1>Students </h1>
+  <p class="subtitle">Manage enrolled students grouped by program and year level</p>
+
   <input
     type="text"
     class="search-box"
@@ -47,14 +40,13 @@
           <option value="BSBA">Bachelor of Science in Business Administration (BSBA)</option>
           <option value="BSAIS">Bachelor of Science in Accounting Information System (BSAIS)</option>
           <option value="BSA">Bachelor of Science in Accountancy (BSA)</option>
-          <option value="BSHM">Bachelor of Science in Hospitalilty Management (BSHM)</option>
+          <option value="BSHM">Bachelor of Science in Hospitality Management (BSHM)</option>
           <option value="BACOMM">Bachelor of Arts in Communication (BACOMM)</option>
           <option value="BMMA">Bachelor of Multimedia Arts (BMMA)</option>
           <option value="BSTM">Bachelor of Science in Tourism Management (BSTM)</option>
         </optgroup>
       </select>
     </div>
-    
 
     <div class="filter-group">
       <label>Select Grade / Year</label>
@@ -73,142 +65,142 @@
       </select>
     </div>
   </div>
- <div id="bulkActionBar" style="
-display:none;
-background: linear-gradient(135deg,#003A8F,#003A8F);
-padding:15px;
-border-radius:10px;
-margin-bottom:20px;
-border:1px solid #d8dcff;
-position: sticky;
-top: 10px;
-z-index: 100;
-box-shadow:0 4px 10px #ffffff;
-">
 
 
-<div style="display: flex; align-items: center; gap: 8px;">
-<select id="promoteToYear" style="
-padding:7px 10px;
-border-radius:6px;
-border:1px solid #cfd4ff;
-background:#ffffff;
-">
-
-<option value="">Move to Year</option>
-
-<optgroup label="Senior High School">
-<option value="Grade 11">Grade 11</option>
-<option value="Grade 12">Grade 12</option>
-</optgroup>
-
-<optgroup label="College">
-<option value="1st Year">1st Year</option>
-<option value="2nd Year">2nd Year</option>
-<option value="3rd Year">3rd Year</option>
-<option value="4th Year">4th Year</option>
-</optgroup>
-
-</select>
-
-<button id="bulkPromoteBtn" style="
-background:#abab30;
-color:white;
-padding:8px 16px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-font-weight:bold;
-">
-Update Level
-</button>
-
-</div>
-
-<div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
-  <select id="shiftToProgram" style="
-    padding:7px 10px;
-    border-radius:6px;
-    border:1px solid #cfd4ff;
-    background:#ffffff;
+  <div id="bulkActionBar" style="
+    display:none;
+    background: #ffffff;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e1e8ed;
+    position: sticky;
+    top: 15px;
+    z-index: 100;
+    box-shadow: 0 10px 25px rgba(0, 58, 143, 0.15);
   ">
-    <option value="">Shift to Program</option>
-    <optgroup label="Senior High School">
-      <option value="ABM">Accountancy, Business, and Management (ABM)</option>
-      <option value="HUMSS">Humanities and Social Sciences (HUMSS)</option>
-      <option value="IT-MAWD">IT in Mobile App and Web Development (IT-MAWD)</option>
-      <option value="CCT">Computer and Communications Technology (CCT)</option>
-      <option value="TOPER">Tourism Operations (TOPER)</option>
-      <option value="CULART">Culinary Arts (CULART)</option>
-    </optgroup>
-    <optgroup label="Tertiary Programs">
-      <option value="BSCS">Bachelor of Science in Computer Science (BSCS)</option>
-      <option value="BSIT">Bachelor of Science in Information Technology (BSIT)</option>
-      <option value="BSBA">Bachelor of Science in Business Administration (BSBA)</option>
-      <option value="BSAIS">Bachelor of Science in Accounting Information System (BSAIS)</option>
-      <option value="BSA">Bachelor of Science in Accountancy (BSA)</option>
-      <option value="BSHM">Bachelor of Science in Hospitalilty Management (BSHM)</option>
-      <option value="BACOMM">Bachelor of Arts in Communication (BACOMM)</option>
-      <option value="BMMA">Bachelor of Multimedia Arts (BMMA)</option>
-      <option value="BSTM">Bachelor of Science in Tourism Management (BSTM)</option>
-    </optgroup>
-  </select>
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      
+      <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+        <label style="font-weight:600; color:#333; display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAllVisible(this)" style="transform:scale(1.2); cursor:pointer;"> 
+          Select All Visible
+        </label>
+        <span id="selectedCount" style="background:#003A8F; color:#ffffff; padding:4px 12px; border-radius:20px; font-size:0.85rem; font-weight:600;">
+          0 students selected
+        </span>
+      </div>
 
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
 
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <select id="promoteToYear" style="padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:#fff; font-size:0.9rem;">
+            <option value="">Move to Year...</option>
+            <optgroup label="Senior High School">
+              <option value="Grade 11">Grade 11</option>
+              <option value="Grade 12">Grade 12</option>
+            </optgroup>
+            <optgroup label="College">
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </optgroup>
+          </select>
+          <button id="bulkPromoteBtn" style="background:#003A8F; color:white; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
+            Update Level
+          </button>
+        </div>
 
-<button id="bulkShiftBtn" style="
-background:#abab30;
-color:white;
-padding:8px 16px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-font-weight:bold;
-">
-Shift Program
-</button>
-</div>
-<div style="display:flex; align-items:center; gap:15px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <select id="shiftToProgram" style="padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:#fff; font-size:0.9rem;">
+            <option value="">Shift Program...</option>
+            <optgroup label="Senior High School">
+              <option value="ABM">ABM</option>
+              <option value="HUMSS">HUMSS</option>
+              <option value="IT-MAWD">IT-MAWD</option>
+              <option value="CCT">CCT</option>
+              <option value="TOPER">TOPER</option>
+              <option value="CULART">CULART</option>
+            </optgroup>
+            <optgroup label="Tertiary Programs">
+              <option value="BSCS">BSCS</option>
+              <option value="BSIT">BSIT</option>
+              <option value="BSBA">BSBA</option>
+              <option value="BSAIS">BSAIS</option>
+              <option value="BSA">BSA</option>
+              <option value="BSHM">BSHM</option>
+              <option value="BACOMM">BACOMM</option>
+              <option value="BMMA">BMMA</option>
+              <option value="BSTM">BSTM</option>
+            </optgroup>
+          </select>
+          <button id="bulkShiftBtn" style="background:#003A8F; color:white; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
+            Shift
+          </button>
+        </div>
 
-<label style="font-weight:600; display:flex; align-items:center; gap:6px; cursor:pointer;">
-<input type="checkbox" id="selectAllCheckbox" style="transform:scale(1.2)"> Select All Visible
-</label>
+        <button id="bulkDeleteBtn" style="background:#d9534f; color:white; padding:8px 14px; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
+          Delete Selected
+        </button>
 
-<span id="selectedCount" style="color:#fffafa; font-size:0.9rem;">
-0 students selected
-</span>
-
-<div style="flex-grow:1"></div>
-
-<button id="bulkDeleteBtn" style="
-background:#abab30;
-color:white;
-padding:8px 16px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-font-weight:bold;
-">
-Delete Selected
-</button>
-
-</div>
-
-</div>
+      </div>
+    </div>
+  </div>
 
   <div id="studentsWrapper"></div>
 
-  <div id="noStudentsMessage" style="display:none; text-align:center; margin-top:30px; color:#777;">
-    <h3>No students enrolled</h3>
+  <div id="noStudentsMessage" style="display:none; text-align:center; margin-top:50px; color:#777;">
+    <h3>No students found</h3>
   </div>
 
-  <div id="imageModal" class="modal">
-    <span class="close">&times;</span>
-    <img class="modal-content" id="imgFull">
-    <div id="caption"></div>
+  <div id="imageModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.8); text-align:center; padding-top:50px;">
+    <span class="close" style="position:absolute; top:20px; right:35px; color:#fff; font-size:40px; font-weight:bold; cursor:pointer;">&times;</span>
+    <img class="modal-content" id="imgFull" style="max-width:80%; max-height:80vh; border-radius:10px; margin:auto;">
+    <div id="caption" style="color:#fff; margin-top:15px; font-size:1.2rem; font-weight:bold;"></div>
+  </div>
+
+  <div id="editStudentModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+    <div style="background:#fff; width:90%; max-width:500px; padding:25px; border-radius:12px; box-shadow:0 5px 20px rgba(0,0,0,0.2);">
+      <h3 style="margin-top:0; color:#003A8F;">Edit Student Information</h3>
+      <input type="hidden" id="editDocId">
+      
+      <div style="margin-bottom:12px;">
+        <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">Student ID</label>
+        <input type="text" id="editStudentId" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div>
+          <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">First Name</label>
+          <input type="text" id="editFirstName" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">Middle Name</label>
+          <input type="text" id="editMiddleName" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:15px;">
+        <div>
+          <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">Last Name</label>
+          <input type="text" id="editLastName" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="display:block; font-size:0.85rem; font-weight:bold; margin-bottom:4px;">Suffix</label>
+          <input type="text" id="editSuffix" placeholder="e.g. Jr." style="width:100%; padding:8px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button onclick="closeEditModal()" style="background:#ccc; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600;">Cancel</button>
+        <button id="saveEditBtn" style="background:#003A8F; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600;">Save Changes</button>
+      </div>
+    </div>
   </div>
 
 </div>
+
 <script src="sidebar.js"></script>
 <script type="module" src="students.js"></script>
 

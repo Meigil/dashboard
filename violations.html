@@ -103,11 +103,78 @@
   <h1>Uniform Violations</h1>
   <p class="subtitle">Repeat offenders summary and student history</p>
 
-  <div class="filter-box" style="margin-bottom: 20px; display: flex; gap: 10px;">
-    <input type="text" id="studentSearch" class="dark-input" placeholder="Search ID, Name, or Program..." style="max-width: 400px;">
+<div class="filter-box" style="margin-bottom: 20px;">
+
+  <input
+    type="text"
+    id="studentSearch"
+    class="search-box"
+    placeholder="Search ID, Name, or Program..."
+  >
+
+  <div class="filters-container">
+
+    <div class="filter-group">
+      <label>Select Program</label>
+      <select class="filter" id="programFilter">
+        <option value="all">All Programs</option>
+
+        <optgroup label="Senior High School">
+          <option value="ABM">Accountancy, Business, and Management (ABM)</option>
+          <option value="HUMSS">Humanities and Social Sciences (HUMSS)</option>
+          <option value="IT-MAWD">IT in Mobile App and Web Development (IT-MAWD)</option>
+          <option value="CCT">Computer and Communications Technology (CCT)</option>
+          <option value="TOPER">Tourism Operations (TOPER)</option>
+          <option value="CULART">Culinary Arts (CULART)</option>
+        </optgroup>
+
+        <optgroup label="Tertiary Programs">
+          <option value="BSCS">Bachelor of Science in Computer Science (BSCS)</option>
+          <option value="BSIT">Bachelor of Science in Information Technology (BSIT)</option>
+          <option value="BSBA">Bachelor of Science in Business Administration (BSBA)</option>
+          <option value="BSAIS">Bachelor of Science in Accounting Information System (BSAIS)</option>
+          <option value="BSA">Bachelor of Science in Accountancy (BSA)</option>
+          <option value="BSHM">Bachelor of Science in Hospitality Management (BSHM)</option>
+          <option value="BACOMM">Bachelor of Arts in Communication (BACOMM)</option>
+          <option value="BMMA">Bachelor of Multimedia Arts (BMMA)</option>
+          <option value="BSTM">Bachelor of Science in Tourism Management (BSTM)</option>
+        </optgroup>
+
+      </select>
+    </div>
+
+
+    <div class="filter-group">
+      <label>Select Grade / Year</label>
+
+      <select class="filter" id="yearFilter">
+        <option value="all">All Levels</option>
+
+        <optgroup label="Senior High School">
+          <option value="Grade 11">Grade 11</option>
+          <option value="Grade 12">Grade 12</option>
+        </optgroup>
+
+        <optgroup label="College">
+          <option value="1st Year">1st Year</option>
+          <option value="2nd Year">2nd Year</option>
+          <option value="3rd Year">3rd Year</option>
+          <option value="4th Year">4th Year</option>
+        </optgroup>
+
+      </select>
+    </div>
+
   </div>
 
-  <div class="table-container">
+</div>
+
+<div id="violationsWrapper"></div>
+
+<div id="noViolationsMessage"
+     style="display:none; text-align:center; margin-top:50px; color:#777;">
+  <h3>No violations found</h3>
+</div>
     <table>
       <thead>
         <tr>
@@ -115,6 +182,7 @@
           <th>Name</th>
           <th>Program & Year</th>
           <th>Total Records</th>
+          <th>Offense Category</th>
           <th>Status</th>
           <th>Action</th>
         </tr>
@@ -256,13 +324,23 @@ const activeLogs = lastCounseled
 
     const count = activeLogs.length;
     const isFlagged = count >= 3;
+    const offense = getOffenseCategory(count);
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td style="color:#00c6ff; font-weight:bold;">${student.id}</td>
                     <td><strong>${student.name}</strong></td>
                     <td>${student.program}</td>
-                    <td><span class="count-circle" style="${isFlagged ? 'background:#e74c3c' : ''}">${count}</span></td>
+                  <td>
+    <span class="count-circle" style="${isFlagged ? 'background:#e74c3c' : ''}">
+        ${count}
+    </span>
+</td>
+
+<td style="font-size: 0.9rem;">
+    ${offense}
+</td>
+
 <td>
     ${isFlagged 
         ? `<span class="flagged-status">Flagged</span>` 
@@ -329,6 +407,21 @@ logs
     }
 
     document.getElementById("studentSearch").addEventListener("input", renderViolations);
+    function getOffenseCategory(count) {
+    if (count === 0) {
+        return "No Record";
+    }
+
+    if (count === 1) {
+        return "1st Offense - Verbal Warning (spoken reminder)";
+    }
+
+    if (count === 2) {
+        return "2nd Offense - Written Reprimand (formal written warning)";
+    }
+
+    return "3rd Offense - Written Reprimand / Corrective Action (suspension for at least 3 school days and up to 7 school days)";
+}
 </script>
 </body>
 </html>
