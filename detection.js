@@ -287,7 +287,7 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence < 0.60) return;
+        if (pred.confidence < 0.80) return;
 
         if (isTodayWashday()) {
             const allowedLanyards = [

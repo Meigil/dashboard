@@ -26,7 +26,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Authentication & Role Check
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -274,7 +274,7 @@ async function checkSimilarFace(imageData) {
           existingDetection.descriptor
         );
 
-        if (distance < 0.50) {
+        if (distance < 0.40) {
           matches.push({
             studentId: student.studentId,
             fullName: student.fullName || "Unknown Student",
@@ -538,6 +538,8 @@ startBulkBtn.addEventListener("click", () => {
 
       const existingStudents = [];
       const missingPhotos = [];
+const similarFaces = [];
+const noFaceDetected = [];
 
       loadingArea.style.display = "flex";
       spinner.style.display = "block";
@@ -578,21 +580,36 @@ startBulkBtn.addEventListener("click", () => {
 
           const base64 = await convertToBase64(photo);
 
+const faceCheck = await checkSimilarFace(base64);
 
-          await setDoc(studentRef, {
-            studentId: sId,
-            firstName: s.firstName || "",
-            middleName: s.middleName || "",
-            lastName: s.lastName || "",
-            suffix: s.suffix || "",
-            fullName: `${s.firstName || ""} ${s.middleName || ""} ${s.lastName || ""} ${s.suffix || ""}`.trim(),
-            course: s.course || "N/A",
-            yearLevel: s.yearLevel || "N/A",
-            imageBase64: base64,
-            createdAt: serverTimestamp()
-          });
+if (!faceCheck.detected) {
+  noFaceDetected.push(sId);
+  continue;
+}
 
-          success++;
+if (faceCheck.matches.length > 0) {
+  similarFaces.push({
+    studentId: sId,
+    fullName: `${s.firstName || ""} ${s.middleName || ""} ${s.lastName || ""} ${s.suffix || ""}`.trim(),
+    matches: faceCheck.matches.slice(0, 5)
+  });
+  continue;
+}
+
+await setDoc(studentRef, {
+  studentId: sId,
+  firstName: s.firstName || "",
+  middleName: s.middleName || "",
+  lastName: s.lastName || "",
+  suffix: s.suffix || "",
+  fullName: `${s.firstName || ""} ${s.middleName || ""} ${s.lastName || ""} ${s.suffix || ""}`.trim(),
+  course: s.course || "N/A",
+  yearLevel: s.yearLevel || "N/A",
+  imageBase64: base64,
+  createdAt: serverTimestamp()
+});
+
+success++;
 
         } catch (err) {
           console.error("Error for " + sId, err);
@@ -658,39 +675,105 @@ startBulkBtn.addEventListener("click", () => {
           </div>
         `;
       }
+let similarList = "";
 
-      if (
-        existingStudents.length > 0 ||
-        missingPhotos.length > 0
-      ) {
+if (similarFaces.length > 0) {
+  similarList = `
+    <div style="
+      margin-top:15px;
+      max-height:220px;
+      overflow-y:auto;
+      text-align:left;
+      background:#fff3cd;
+      padding:12px;
+      border-radius:8px;
+    ">
+      <b>Similar Face Detected:</b>
 
-        Swal.fire({
-          icon: "warning",
-          title: "Batch Enrollment Complete",
+      <ul style="
+        margin-top:8px;
+        padding-left:20px;
+      ">
+        ${similarFaces.map(student => `
+          <li style="margin-bottom:10px;">
+            <b>${student.studentId}</b> — ${student.fullName}
+            <br>
+            <span style="font-size:13px;color:#666;">
+              Possible match:
+              ${student.matches.map(match =>
+                `${match.studentId} — ${match.fullName}`
+              ).join("<br>")}
+            </span>
+          </li>
+        `).join("")}
+      </ul>
+    </div>
+  `;
+}
 
-          html: `
-            <div style="text-align:left;">
+let noFaceList = "";
 
-              <p>
-                <b>${success}</b> new students enrolled.
-              </p>
+if (noFaceDetected.length > 0) {
+  noFaceList = `
+    <div style="
+      margin-top:15px;
+      max-height:150px;
+      overflow-y:auto;
+      text-align:left;
+      background:#f8d7da;
+      padding:12px;
+      border-radius:8px;
+    ">
+      <b>Face Not Detected:</b>
 
-              <p>
-                <b>${skipped}</b> existing students were skipped.
-              </p>
+      <ul style="
+        margin-top:8px;
+        padding-left:20px;
+      ">
+        ${noFaceDetected.map(id => `<li>${id}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
 
-              ${existingList}
+if (
+  existingStudents.length > 0 ||
+  missingPhotos.length > 0 ||
+  similarFaces.length > 0 ||
+  noFaceDetected.length > 0
+) {
 
-              ${missingList}
+  Swal.fire({
+    icon: "warning",
+    title: "Batch Enrollment Complete",
 
-            </div>
-          `,
+    html: `
+      <div style="text-align:left;">
 
-          confirmButtonColor: "#003A8F",
-          width: "550px"
-        });
+        <p>
+          <b>${success}</b> new students enrolled.
+        </p>
 
-      } else {
+        <p>
+          <b>${skipped}</b> existing students were skipped.
+        </p>
+
+        ${existingList}
+
+        ${missingList}
+
+        ${similarList}
+
+        ${noFaceList}
+
+      </div>
+    `,
+
+    confirmButtonColor: "#003A8F",
+    width: "550px"
+  });
+
+}else {
 
 
         Swal.fire({
