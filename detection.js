@@ -169,7 +169,7 @@ Promise.all([
 });
 
 function startCamera() {
-    navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, facingMode: "user" } })
+    navigator.mediaDevices.getUserMedia({ video: { width: 3840, height: 2160, facingMode: "user" } })
         .then(stream => video.srcObject = stream)
         .catch(err => console.error("Camera Error:", err));
 }
