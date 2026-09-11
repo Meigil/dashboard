@@ -278,6 +278,7 @@ async function checkSimilarFace(imageData) {
           matches.push({
             studentId: student.studentId,
             fullName: student.fullName || "Unknown Student",
+             imageBase64: student.imageBase64,
             distance
           });
         }
@@ -307,7 +308,15 @@ async function checkSimilarFace(imageData) {
   }
 }
 
-
+window.viewSimilarFace = function (imageBase64) {
+  Swal.fire({
+    imageUrl: imageBase64,
+    imageAlt: "Student Photo",
+    showConfirmButton: false,
+    showCloseButton: true,
+    width: "450px"
+  });
+};
 window.saveStudent = async function () {
   const studentId = document.getElementById("studentId").value.trim();
   const firstName = document.getElementById("firstName").value.trim();
@@ -345,21 +354,41 @@ window.saveStudent = async function () {
 
   try {
 
+    Swal.fire({
+  title: "Saving Profile...",
+  text: "Please wait while the student profile is being saved.",
+  allowOutsideClick: false,
+  allowEscapeKey: false,
+  showConfirmButton: false,
+  didOpen: () => {
+    Swal.showLoading();
+  }
+});
+
     const studentRef = doc(db, "students", studentId);
     const existingStudent = await getDoc(studentRef);
+if (existingStudent.exists()) {
+  Swal.close();
 
-    if (existingStudent.exists()) {
-      Swal.fire({
-        icon: "warning",
-        title: "Student Already Exists",
-        text: `Student ID ${studentId} is already enrolled.`,
-        confirmButtonColor: "#003A8F"
-      });
-      return;
-    }
-    const faceCheck = await checkSimilarFace(imageData);
+  Swal.fire({
+    icon: "warning",
+    title: "Student Already Exists",
+    text: `Student ID ${studentId} is already enrolled.`,
+    confirmButtonColor: "#003A8F"
+  });
+  return;
+}
+
+Swal.update({
+  title: "Checking Face...",
+  text: "Please wait while we verify the face."
+});
+
+const faceCheck = await checkSimilarFace(imageData);
 
 if (!faceCheck.detected) {
+  Swal.close();
+
   Swal.fire({
     icon: "warning",
     title: "Face Not Detected",
@@ -370,13 +399,41 @@ if (!faceCheck.detected) {
 }
 
 if (faceCheck.matches.length > 0) {
-  const similarStudents = faceCheck.matches
-    .slice(0, 5)
-    .map(
-      student =>
-        `<li><b>${student.studentId}</b> — ${student.fullName}</li>`
-    )
-    .join("");
+const similarStudents = faceCheck.matches
+  .slice(0, 5)
+  .map(
+    student => `
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:12px;
+        margin-bottom:12px;
+        padding:10px;
+        background:#fff;
+        border-radius:8px;
+      ">
+        <img 
+          src="${student.imageBase64}"
+          onclick="viewSimilarFace('${student.imageBase64}')"
+          style="
+            width:70px;
+            height:70px;
+            object-fit:cover;
+            border-radius:8px;
+            border:2px solid #ddd;
+            cursor:pointer;
+          "
+          title="Click to view photo"
+        >
+
+        <div>
+          <b>${student.studentId}</b><br>
+          <span>${student.fullName}</span>
+        </div>
+      </div>
+    `
+  )
+  .join("");
 
   const result = await Swal.fire({
     icon: "warning",
@@ -396,9 +453,9 @@ if (faceCheck.matches.length > 0) {
         margin-top:10px;
       ">
         <b>Possible Match:</b>
-        <ul style="padding-left:20px;">
+        <div style="padding-left:20px;">
           ${similarStudents}
-        </ul>
+        </div>
       </div>
 
       <p style="margin-top:12px;font-size:13px;color:#666;">
@@ -417,7 +474,16 @@ if (faceCheck.matches.length > 0) {
   }
 }
 
-
+Swal.fire({
+  title: "Saving Profile...",
+  text: "Please wait while the student profile is being saved.",
+  allowOutsideClick: false,
+  allowEscapeKey: false,
+  showConfirmButton: false,
+  didOpen: () => {
+    Swal.showLoading();
+  }
+});
     await setDoc(studentRef, {
       studentId,
       firstName,
@@ -681,7 +747,7 @@ if (similarFaces.length > 0) {
   similarList = `
     <div style="
       margin-top:15px;
-      max-height:220px;
+      max-height:300px;
       overflow-y:auto;
       text-align:left;
       background:#fff3cd;
@@ -690,23 +756,54 @@ if (similarFaces.length > 0) {
     ">
       <b>Similar Face Detected:</b>
 
-      <ul style="
-        margin-top:8px;
-        padding-left:20px;
-      ">
+      <div style="margin-top:10px;">
         ${similarFaces.map(student => `
-          <li style="margin-bottom:10px;">
+          <div style="
+            margin-bottom:15px;
+            padding:10px;
+            background:#fff;
+            border-radius:8px;
+          ">
             <b>${student.studentId}</b> — ${student.fullName}
-            <br>
-            <span style="font-size:13px;color:#666;">
-              Possible match:
-              ${student.matches.map(match =>
-                `${match.studentId} — ${match.fullName}`
-              ).join("<br>")}
-            </span>
-          </li>
+
+            <div style="
+              margin-top:8px;
+              font-size:13px;
+              color:#666;
+            ">
+              Possible Match:
+            </div>
+
+            ${student.matches.map(match => `
+              <div style="
+                display:flex;
+                align-items:center;
+                gap:10px;
+                margin-top:8px;
+              ">
+                <img
+                  src="${match.imageBase64}"
+                  onclick="viewSimilarFace('${match.imageBase64}')"
+                  style="
+                    width:60px;
+                    height:60px;
+                    object-fit:cover;
+                    border-radius:8px;
+                    border:2px solid #ddd;
+                    cursor:pointer;
+                  "
+                  title="Click to view photo"
+                >
+
+                <div>
+                  <b>${match.studentId}</b><br>
+                  <span>${match.fullName}</span>
+                </div>
+              </div>
+            `).join("")}
+          </div>
         `).join("")}
-      </ul>
+      </div>
     </div>
   `;
 }

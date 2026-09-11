@@ -287,7 +287,7 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence < 0.80) return;
+        if (pred.confidence < 0.90) return;
 
         if (isTodayWashday()) {
             const allowedLanyards = [
@@ -506,18 +506,45 @@ function getOffenseCategory(count) {
 
     return "3rd Offense - Written Reprimand / Corrective Action (suspension for at least 3 school days and up to 7 school days)";
 }
+
+async function hasViolationToday(studentId, dateString) {
+    if (!studentId) return false;
+
+    const q = query(
+        collection(db, "attendance"),
+        where("studentId", "==", studentId),
+        where("dateString", "==", dateString)
+    );
+
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.some(doc => {
+        const data = doc.data();
+
+        return data.violationType &&
+               data.violationType !== "None";
+    });
+}
 async function updateUI(match, status, violation) {
     const student = studentInfoMap[match.label];
     const now = new Date();
 
     const violationData = await getViolationData(student?.studentId);
 
-    let displayCount = violationData.count;
+let displayCount = violationData.count;
 
-if (violation !== "None") {
-    displayCount += 1;
+if (violation !== "None" && violation !== "---") {
+    const today = new Date().toLocaleDateString();
+
+    const alreadyHasViolationToday = await hasViolationToday(
+        student?.studentId,
+        today
+    );
+
+    if (!alreadyHasViolationToday) {
+        displayCount++;
+    }
 }
-
 const displayCategory = getOffenseCategory(displayCount);
 
     resName.innerHTML = `<strong>Student Name:</strong> ${match.label}`;
@@ -574,29 +601,15 @@ async function recordAttendance(name, status, violation) {
 
     const querySnapshot = await getDocs(attendanceQuery);
     const alreadyHasAttendance = !querySnapshot.empty;
-if (
-    alreadyHasAttendance &&
-    (violation === "None" || !violation)
-) {
-    alert("Attendance already recorded today.");
-    return false;
-}if (alreadyHasAttendance && violation !== "None") {
-
-    const duplicateViolation = querySnapshot.docs.some(doc => {
-
-        const data = doc.data();
-
-        return data.violationType === violation;
-
+if (alreadyHasAttendance) {
+    await Swal.fire({
+        icon: "warning",
+        title: "Already Recorded",
+        text: "This student already has an attendance record today.",
+        confirmButtonColor: "#003A8F"
     });
 
-    if (duplicateViolation) {
-
-        alert("Violation already recorded.");
-        return false;
-
-    }
-
+    return false;
 }
 
     const tempCanvas = document.createElement("canvas");
@@ -607,6 +620,16 @@ if (
     tCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
 
     const proofImage = tempCanvas.toDataURL("image/jpeg", 0.5);
+    Swal.fire({
+    title: "Recording Attendance...",
+    text: "Please wait while the attendance is being saved.",
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => {
+        Swal.showLoading();
+    }
+});
     await addDoc(collection(db, "attendance"), {
         studentName: name,
         studentId: student?.studentId || "N/A",
@@ -625,11 +648,12 @@ if (
             : 0 
     });
 
-if (alreadyHasAttendance && violation !== "None") {
-    alert("Violation record saved.");
-} else {
-    alert("Attendance Recorded!");
-}
+await Swal.fire({
+    icon: "success",
+    title: "Attendance Recorded!",
+    text: "The student's attendance has been recorded successfully.",
+    confirmButtonColor: "#003A8F"
+});
 
 return true;
 }
