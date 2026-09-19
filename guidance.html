@@ -7,6 +7,38 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* Dashboard Cards Layout */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    .metric-card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      border-top: 4px solid #e2e8f0;
+    }
+    .metric-card:nth-child(1) { border-top-color: #f59e0b; background: linear-gradient(to bottom, #fffdf5, #ffffff); }
+    .metric-card:nth-child(2) { border-top-color: #ef4444; background: linear-gradient(to bottom, #fff5f5, #ffffff); }
+    .metric-card:nth-child(3) { border-top-color: #10b981; background: linear-gradient(to bottom, #f0fdf4, #ffffff); }
+    .metric-card:nth-child(4) { border-top-color: #3b82f6; background: linear-gradient(to bottom, #eff6ff, #ffffff); }
+
+    .metric-title {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .metric-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #0f172a;
+    }
+
+    /* Existing Page Styles */
     .search-container {
       margin-bottom: 20px;
       position: relative;
@@ -52,7 +84,6 @@
       background: #ffed4e;
       transform: scale(1.05);
     }
-
 
     #imageModal {
       display: none;
@@ -124,15 +155,36 @@
       padding: 40px;
       color: #666;
     }
-</style>
+  </style>
 </head>
 <body>
 
+  <!-- Sidebar Container -->
   <div class="sidebar"></div>
 
   <div class="main-content">
     <h1>Guidance Recommendations</h1>
-    <p class="subtitle">List of students with <strong>3 or more</strong> uniform violations requiring intervention.</p>
+    <p class="subtitle" style="color: #6c757d; font-size: 14px; margin-bottom: 25px;">List of students with <strong>3 or more</strong> uniform violations requiring intervention.</p>
+
+    <!-- Top Dashboard Metric Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-title">Total Students Scanned</div>
+            <div class="metric-value">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Uniform Violations</div>
+            <div class="metric-value">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Complete Uniform Rate</div>
+            <div class="metric-value">0%</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Guidance Required</div>
+            <div class="metric-value">0</div>
+        </div>
+    </div>
 
     <div class="search-container">
       <input type="text" id="studentSearch" placeholder="Search by Name or Student ID...">
@@ -200,42 +252,56 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  const email = user.email ? user.email.toLowerCase().trim() : "";
-
-  try {
-    const userDocRef = doc(db, "users", email);
-    const userSnap = await getDoc(userDocRef);
-
-    if (userSnap.exists()) {
-      const userRole = userSnap.data().role;
-
-   
-      if (userRole !== "guidance") {
-        alert("Your account role is not authorized.");
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
         window.location.href = "login.html";
-        return; 
+        return;
       }
 
-      renderSidebar(userRole);
+      const email = user.email ? user.email.toLowerCase().trim() : "";
 
-    } else {
-      console.error("User record not found.");
-      alert("Your account role is not authorized.");
-      window.location.href = "login.html";
-    }
+      try {
+        const userDocRef = doc(db, "users", email);
+        const userSnap = await getDoc(userDocRef);
 
-  } catch (error) {
-    console.error("Error fetching user role:", error);
-    window.location.href = "login.html";
-  }
-});
+        if (userSnap.exists()) {
+          const userRole = userSnap.data().role;
+
+          if (userRole !== "guidance") {
+            alert("Your account role is not authorized.");
+            window.location.href = "login.html";
+            return; 
+          }
+
+          if (typeof renderSidebar === 'function') {
+              renderSidebar(userRole);
+          } else {
+              document.querySelector('.sidebar').innerHTML = `
+                <div class="sidebar-top">
+                    <div style="color: #ffcc00; font-size: 20px; font-weight: bold; text-align: center; padding: 20px 0; letter-spacing: 1px;">UNISCAN</div>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="background-color: rgba(255, 204, 0, 0.15); border-left: 4px solid #ffcc00;"><a href="guidance.html" style="display: block; padding: 12px 20px; color: #ffcc00; text-decoration: none; font-size: 14px;">Dash</a></li>
+                        <li><a href="guidance.html" style="display: block; padding: 12px 20px; color: #cbd5e1; text-decoration: none; font-size: 14px;">Guidance</a></li>
+                    </ul>
+                </div>
+                <div class="sidebar-bottom" style="padding: 20px;">
+                    <a href="login.html" style="color: #cbd5e1; text-decoration: none; font-size: 14px;">Log Out</a>
+                </div>
+              `;
+          }
+
+        } else {
+          console.error("User record not found.");
+          alert("Your account role is not authorized.");
+          window.location.href = "login.html";
+        }
+
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        window.location.href = "login.html";
+      }
+    });
+
     let latestRecords = []; 
 
     const q = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
@@ -250,224 +316,104 @@ onAuthStateChanged(auth, async (user) => {
     });
 
     function getOffenseCategory(count) {
-    if (count === 0) {
-        return "No Record";
+      if (count === 0) return "No Record";
+      if (count === 1) return "1st Offense - Verbal Warning (spoken reminder)";
+      if (count === 2) return "2nd Offense - Written Reprimand (formal written warning)";
+      return "3rd Offense - Written Reprimand / Corrective Action (suspension for at least 3 school days and up to 7 school days)";
     }
 
-    if (count === 1) {
-        return "1st Offense - Verbal Warning (spoken reminder)";
-    }
+    function processGuidanceData() {
+      const tbody = document.getElementById("guidanceTableBody");
+      const noRecordsMsg = document.getElementById("noRecords");
+      const emptyMessage = document.getElementById("emptyMessage");
+      const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
 
-    if (count === 2) {
-        return "2nd Offense - Written Reprimand (formal written warning)";
-    }
+      tbody.innerHTML = "";
+      const studentStats = {};
 
-    return "3rd Offense - Written Reprimand / Corrective Action (suspension for at least 3 school days and up to 7 school days)";
-}
+      latestRecords.forEach(rec => {
+          const hasViolation = rec.violationType && rec.violationType !== "None";
+          if (!hasViolation || !rec.studentId) return;
 
-function processGuidanceData() {
+          if (!studentStats[rec.studentId]) {
+              studentStats[rec.studentId] = {
+                  id: rec.studentId,
+                  name: rec.studentName || "Unknown",
+                  program: rec.programLevel || "N/A",
+                  logs: []
+              };
+          }
+          studentStats[rec.studentId].logs.push(rec);
+      });
 
-    const tbody = document.getElementById("guidanceTableBody");
-    const noRecordsMsg = document.getElementById("noRecords");
-    const emptyMessage = document.getElementById("emptyMessage");
-    const searchTerm = document
-        .getElementById('studentSearch')
-        .value
-        .toLowerCase();
+      let visibleCount = 0;
 
-    tbody.innerHTML = "";
+      for (const id in studentStats) {
+          const student = studentStats[id];
 
-    const studentStats = {};
+          const lastCounseled = student.logs
+              .map(log => log.counseledAt ? new Date(log.counseledAt) : null)
+              .filter(Boolean)
+              .sort((a, b) => b - a)[0];
 
-    latestRecords.forEach(rec => {
+          const activeLogs = lastCounseled
+              ? student.logs.filter(log => log.timestamp?.toDate?.() > lastCounseled)
+              : student.logs;
 
-        // ONLY REAL VIOLATIONS
-        const hasViolation =
-            rec.violationType &&
-            rec.violationType !== "None";
+          const uniqueLogs = [];
+          const seen = new Set();
 
-        if (!hasViolation || !rec.studentId) return;
+          activeLogs.forEach(log => {
+              const key = log.dateString + log.violationType;
+              if (!seen.has(key)) {
+                  seen.add(key);
+                  uniqueLogs.push(log);
+              }
+          });
 
-        if (!studentStats[rec.studentId]) {
+          const count = uniqueLogs.length;
+          if (count < 3) continue;
 
-            studentStats[rec.studentId] = {
-                id: rec.studentId,
-                name: rec.studentName || "Unknown",
-                program: rec.programLevel || "N/A",
-                logs: []
-            };
+          const nameMatch = student.name.toLowerCase().includes(searchTerm);
+          const idMatch = student.id.toLowerCase().includes(searchTerm);
 
-        }
+          if (!nameMatch && !idMatch) continue;
 
-        studentStats[rec.studentId].logs.push(rec);
+          visibleCount++;
+          const offense = getOffenseCategory(count);
+          const tr = document.createElement("tr");
 
-    });
+          tr.innerHTML = `
+              <td style="font-weight:bold; color:#00c6ff;">${student.id}</td>
+              <td>${student.name}</td>
+              <td>${student.program}</td>
+              <td><span class="guidance-badge">${count} Violations</span></td>
+              <td style="text-align:right; padding-right:20px;">${offense}</td>
+              <td>
+                  <button onclick='viewDetails(${JSON.stringify(
+                      uniqueLogs.map(l => ({
+                          date: l.dateString,
+                          time: l.timeString,
+                          img: l.capturedImage,
+                          type: l.violationType
+                      }))
+                  ).replace(/'/g, "&apos;")}, "${student.name}", "${student.program}")'>
+                      View Images
+                  </button>
+              </td>
+              <td>
+                  <button class="action-btn" onclick="markCounseled('${student.id}')">
+                      Mark as Counseled
+                  </button>
+              </td>
+          `;
+          tbody.appendChild(tr);
+      }
 
-    let visibleCount = 0;
-
-    for (const id in studentStats) {
-
-        const student = studentStats[id];
-
-        // latest counseling
-        const lastCounseled = student.logs
-            .map(log => log.counseledAt ? new Date(log.counseledAt) : null)
-            .filter(Boolean)
-            .sort((a, b) => b - a)[0];
-
-        // active violations only
-        const activeLogs = lastCounseled
-            ? student.logs.filter(log =>
-                log.timestamp?.toDate?.() > lastCounseled
-              )
-            : student.logs;
-
-        // REMOVE DUPLICATES
-        const uniqueLogs = [];
-        const seen = new Set();
-
-        activeLogs.forEach(log => {
-
-            const key =
-                log.dateString +
-                log.violationType;
-
-            if (!seen.has(key)) {
-                seen.add(key);
-                uniqueLogs.push(log);
-            }
-
-        });
-
-        const count = uniqueLogs.length;
-
-        // only 3+
-        if (count < 3) continue;
-
-        const nameMatch =
-            student.name.toLowerCase().includes(searchTerm);
-
-        const idMatch =
-            student.id.toLowerCase().includes(searchTerm);
-
-        if (!nameMatch && !idMatch) continue;
-
-        visibleCount++;
-
-        const offense = getOffenseCategory(count);
-
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-            <td style="font-weight:bold; color:#00c6ff;">
-                ${student.id}
-            </td>
-
-            <td>${student.name}</td>
-
-            <td>${student.program}</td>
-
-            <td>
-                <span class="guidance-badge">
-                    ${count} Violations
-                </span>
-            </td>
-
-            <td style="text-align:right; padding-right:20px;">
-                ${offense}
-            </td>
-
-            <td>
-                <button onclick='viewDetails(${JSON.stringify(
-                    uniqueLogs.map(l => ({
-                        date: l.dateString,
-                        time: l.timeString,
-                        img: l.capturedImage,
-                        type: l.violationType
-                    }))
-                ).replace(/'/g, "&apos;")},
-                "${student.name}",
-                "${student.program}")'>
-
-                    View Images
-
-                </button>
-            </td>
-
-            <td>
-                <button class="action-btn"
-                    onclick="markCounseled('${student.id}')">
-
-                    Mark as Counseled
-
-                </button>
-            </td>
-        `;
-
-        tbody.appendChild(tr);
-
-    }
-
-    noRecordsMsg.style.display =
-        visibleCount === 0 ? "block" : "none";
-
-    if (visibleCount === 0 && searchTerm !== "") {
-
-        emptyMessage.innerText =
-            `No results found for "${searchTerm}"`;
-
-    
-
-const activeLogs = lastCounseled
-    ? student.logs.filter(log =>
-        !log.counseledAt || log.timestamp?.toDate?.() > new Date(lastCounseled)
-      )
-    : student.logs;
-
-const count = activeLogs.length;
-    
-
-            if (count >= 3) {
-                const nameMatch = student.name.toLowerCase().includes(searchTerm);
-                const idMatch = student.id.toLowerCase().includes(searchTerm);
-
-                if (nameMatch || idMatch) {
-                    visibleCount++;
-                    const tr = document.createElement("tr");
-const offense = getOffenseCategory(count);
-
-tr.innerHTML = `
-    <td style="font-weight:bold; color:#00c6ff;">${student.id}</td>
-    <td>${student.name}</td>
-    <td>${student.program}</td>
-    
-    <td><span class="guidance-badge">${count} Violations</span></td>
-    <td style="text-align: right; padding-right: 20px;">${offense}</td>
-    <td>
-      <button onclick='viewDetails(${JSON.stringify(student.logs.map(l => ({
-          date: l.dateString,
-          time: l.timeString,
-          img: l.capturedImage,
-          type: l.violationType
-      }))).replace(/'/g, "&apos;")}, "${student.name}", "${student.program}")'>
-        View Images
-      </button>
-    </td>
-    <td>
-      <button class="action-btn" onclick="markCounseled('${student.id}')">
-        Mark as Counseled
-      </button>
-    </td>
-`;
-                    tbody.appendChild(tr);
-                }
-            }
-        }
-
-        noRecordsMsg.style.display = (visibleCount === 0) ? "block" : "none";
-        if (visibleCount === 0 && searchTerm !== "") {
-            emptyMessage.innerText = `No results found for "${searchTerm}"`;
-        }
+      noRecordsMsg.style.display = visibleCount === 0 ? "block" : "none";
+      if (visibleCount === 0 && searchTerm !== "") {
+          emptyMessage.innerText = `No results found for "${searchTerm}"`;
+      }
     }
 
     window.viewDetails = (logs, studentName, studentDetails) => {
@@ -486,13 +432,11 @@ tr.innerHTML = `
         logs.forEach(log => {
             listHTML += `
                 <div class="history-card">
-                    <img src="${log.img || 'https://via.placeholder.com/100'}" 
-                         class="history-img" 
-                         onclick="zoomImage('${log.img}')">
+                    <img src="${log.img || 'https://via.placeholder.com/100'}" class="history-img" onclick="zoomImage('${log.img}')">
                     <div class="history-info">
                         <div style="color: #f1c40f; font-weight: bold; font-size: 1.1rem;">${log.type}</div>
-<div style="margin-top: 8px; color: #333; font-weight: 500;">Date: ${log.date}</div>
-<div style="color: #666; font-size: 0.9rem;">Time: ${log.time}</div>
+                        <div style="margin-top: 8px; color: #333; font-weight: 500;">Date: ${log.date}</div>
+                        <div style="color: #666; font-size: 0.9rem;">Time: ${log.time}</div>
                     </div>
                 </div>
             `;
@@ -515,31 +459,26 @@ tr.innerHTML = `
         zoomModal.style.display = "flex";
     }
 
-window.markCounseled = async (id) => {
-    if (!confirm(`Confirm counseling for Student ID: ${id}?`)) return;
+    window.markCounseled = async (id) => {
+        if (!confirm(`Confirm counseling for Student ID: ${id}?`)) return;
 
-    try {
-        const q = query(
-            collection(db, "attendance"),
-            where("studentId", "==", id)
-        );
+        try {
+            const q = query(collection(db, "attendance"), where("studentId", "==", id));
+            const snapshot = await getDocs(q);
 
-        const snapshot = await getDocs(q);
+            const updates = snapshot.docs.map(docSnap =>
+                updateDoc(docSnap.ref, {
+                    counseledAt: new Date().toISOString()
+                })
+            );
 
-        const updates = snapshot.docs.map(docSnap =>
-            updateDoc(docSnap.ref, {
-                counseledAt: new Date().toISOString()
-            })
-        );
-
-        await Promise.all(updates);
-
-        alert("Counseling recorded. Violation count reset.");
-    } catch (err) {
-        console.error(err);
-        alert("Failed.");
-    }
-};
+            await Promise.all(updates);
+            alert("Counseling recorded. Violation count reset.");
+        } catch (err) {
+            console.error(err);
+            alert("Failed.");
+        }
+    };
   </script>
 </body>
-</html> 
+</html>
