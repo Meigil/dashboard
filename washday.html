@@ -1,10 +1,12 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Washday </title>
-    <link rel="stylesheet" href="style.css"> 
+    <title>Washday Schedule</title>
+    <link rel="stylesheet" href="style.css">
+
     <style>
         body {
             display: flex;
@@ -14,8 +16,8 @@
             font-family: 'Segoe UI', Arial, sans-serif;
         }
 
-        /* SIDEBAR FIX */
-         .sidebar {
+        /* SIDEBAR */
+        .sidebar {
             width: 240px;
             height: 100vh;
             position: fixed;
@@ -27,7 +29,9 @@
             border-right: 1px solid rgba(255,255,255,0.1);
             border-top-right-radius: 10px;
             border-bottom-right-radius: 10px;
+            box-sizing: border-box;
         }
+
         .sidebar h2 {
             text-align: center;
             margin-bottom: 30px;
@@ -58,253 +62,1447 @@
             transform: translateX(4px);
         }
 
+        /* MAIN */
         .main-content {
             flex: 1;
-            margin-left: 250px;
+            margin-left: 240px;
             padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            min-width: 0;
+            box-sizing: border-box;
         }
 
         .container {
-            width: 95%;
-            max-width: 900px; 
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
             background: white;
             padding: 30px;
-            border-radius: 8px;
+            border-radius: 10px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            box-sizing: border-box;
         }
 
-        h2 {
-            margin: 0 0 10px 0;
+        .page-header h2 {
+            margin: 0 0 8px;
             color: #2c3e50;
         }
 
-        .description {
+        .page-header p {
+            color: #666;
             font-size: 0.95rem;
-            color: #030303;
-            margin-bottom: 30px;
+            margin: 0 0 25px;
+            line-height: 1.5;
         }
 
+        /* TODAY STATUS */
+        .today-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
 
+        .today-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .today-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e3f2fd;
+            color: #1976d2;
+            font-size: 21px;
+        }
+
+        .today-label {
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 3px;
+        }
+
+        .today-date {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .today-badge {
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .today-badge.washday {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .today-badge.regular {
+            background: #f1f3f5;
+            color: #666;
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        /* DAY GRID */
         .day-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
-            gap: 12px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
         }
 
         .day-item {
+            position: relative;
             display: flex;
-            flex-direction: column; 
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px 10px;
+            min-height: 105px;
+            padding: 15px 8px;
             border: 1px solid #ddd;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             transition: 0.2s;
             background: #fff;
+            box-sizing: border-box;
         }
 
         .day-item:hover {
             border-color: #2196f3;
             background-color: #f0f7ff;
+            transform: translateY(-2px);
         }
 
         .day-item input {
             width: 20px;
             height: 20px;
-            margin-bottom: 10px;
+            margin-bottom: 9px;
             cursor: pointer;
+            accent-color: #2196f3;
         }
 
         .day-item label {
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             color: #444;
+            text-align: center;
         }
 
         .day-item.active {
             background-color: #e3f2fd;
             border-color: #2196f3;
-            color: #1976d2;
+            box-shadow: 0 2px 7px rgba(33,150,243,0.12);
         }
 
         .day-item.active label {
             color: #1976d2;
         }
 
+        /* TODAY INDICATOR */
+        .today-indicator {
+            position: absolute;
+            top: 6px;
+            right: 7px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #f57c00;
+        }
 
+        .day-status {
+            margin-top: 5px;
+            font-size: 0.68rem;
+            color: #888;
+        }
+
+        .day-item.active .day-status {
+            color: #1976d2;
+            font-weight: 600;
+        }
+
+        /* SELECTED DAYS */
+        .selected-days-box {
+            padding: 15px 18px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .selected-days-title {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .selected-days-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 28px;
+            align-items: center;
+        }
+
+        .selected-day-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #90caf9;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .none-selected {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        /* WEEKLY PREVIEW */
+        .preview-section {
+            border-top: 1px solid #eee;
+            padding-top: 22px;
+            margin-bottom: 25px;
+        }
+
+        .weekly-preview {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .preview-day {
+            text-align: center;
+            padding: 11px 5px;
+            border-radius: 7px;
+            background: #f5f5f5;
+            border: 1px solid #e5e5e5;
+        }
+
+        .preview-day-name {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .preview-status {
+            font-size: 0.65rem;
+            color: #888;
+        }
+
+        .preview-day.washday {
+            background: #e8f5e9;
+            border-color: #a5d6a7;
+        }
+
+        .preview-day.washday .preview-status {
+            color: #2e7d32;
+            font-weight: 700;
+        }
+
+        .preview-day.today {
+            outline: 2px solid #fbc02d;
+            outline-offset: 1px;
+        }
+
+        /* RULE CARD */
+        .rule-card {
+            display: flex;
+            gap: 14px;
+            padding: 17px;
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .rule-icon {
+            font-size: 21px;
+            color: #f57c00;
+            flex-shrink: 0;
+        }
+
+        .rule-content strong {
+            display: block;
+            color: #5d4037;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .rule-content span {
+            color: #6d4c41;
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+
+        /* LAST UPDATED */
+        .last-updated {
+            font-size: 0.78rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        /* ACTION AREA */
         .action-area {
             display: flex;
             align-items: center;
-            gap: 20px;
+            justify-content: space-between;
+            gap: 15px;
             border-top: 1px solid #eee;
-            padding-top: 25px;
+            padding-top: 22px;
+        }
+
+        .action-left {
+            display: flex;
+            gap: 10px;
+        }
+
+        .clear-btn,
+        .save-btn {
+            border: none;
+            padding: 11px 22px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .clear-btn {
+            background: #f1f3f5;
+            color: #555;
+            border: 1px solid #ddd;
+        }
+
+        .clear-btn:hover {
+            background: #e2e6ea;
         }
 
         .save-btn {
             background-color: #2196f3;
-            color:#031736;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
+            color: white;
+            min-width: 150px;
         }
 
         .save-btn:hover {
             background-color: #1565c0;
         }
 
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         #statusMsg {
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 0.85rem;
             color: #2e7d32;
+            text-align: right;
+        }
+
+        /* CUSTOM MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 420px;
+            max-width: calc(100% - 40px);
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: modalFade 0.18s ease;
+        }
+
+        @keyframes modalFade {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: #2c3e50;
+        }
+
+        .modal-body {
+            padding: 20px 22px;
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .modal-body strong {
+            color: #2c3e50;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 15px 22px;
+            border-top: 1px solid #eee;
+            background: #fafafa;
+        }
+
+        .modal-btn {
+            border: none;
+            padding: 9px 18px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .modal-cancel {
+            background: #e9ecef;
+            color: #555;
+        }
+
+        .modal-cancel:hover {
+            background: #dee2e6;
+        }
+
+        .modal-confirm {
+            background: #2196f3;
+            color: #fff;
+        }
+
+        .modal-confirm:hover {
+            background: #1565c0;
+        }
+
+        .modal-danger {
+            background: #d32f2f;
+            color: #fff;
+        }
+
+        .modal-danger:hover {
+            background: #b71c1c;
+        }
+
+        .modal-ok {
+            background: #2196f3;
+            color: #fff;
+        }
+
+        /* DESKTOP */
+        @media (min-width: 1400px) {
+            .main-content {
+                padding: 50px 60px;
+            }
+
+            .container {
+                max-width: 1200px;
+                padding: 35px;
+            }
+
+            .day-item {
+                min-height: 115px;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="sidebar"></div>
 
-<div class="main-content">
-    <div class="container">
-        <h2 style="color: #2c3e50; margin-bottom: 8px;">Washday Schedule</h2>
-        <p style="color: #666; font-size: 0.95rem; margin-top: 0;">
-            Select the days for washday attire. On these days, the system will only check the <b>Lanyard</b>.
-        </p>
+    <div class="main-content">
+        <div class="container">
 
-            <div class="day-grid" id="dayGrid">
+            <div class="page-header">
+                <h2>Washday Schedule</h2>
+                <p>
+                    Select the days for washday attire. On these days,
+                    the system will only check the <b>Lanyard</b>.
+                </p>
+            </div>
+
+            <div class="today-status">
+                <div class="today-left">
+                    <div class="today-icon">CAL</div>
+
+                    <div>
+                        <div class="today-label">TODAY'S STATUS</div>
+                        <div class="today-date" id="todayDate">
+                            Loading...
+                        </div>
+                    </div>
                 </div>
 
+                <div id="todayBadge" class="today-badge regular">
+                    REGULAR UNIFORM
+                </div>
+            </div>
+
+            <div class="section-title">
+                Select Washdays
+            </div>
+
+            <div class="day-grid" id="dayGrid"></div>
+
+            <div class="selected-days-box">
+                <span class="selected-days-title">
+                    Selected Washdays
+                </span>
+
+                <div id="selectedDaysDisplay" class="selected-days-display">
+                    <span class="none-selected">None</span>
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <div class="section-title">
+                    Weekly Schedule Preview
+                </div>
+
+                <div class="weekly-preview" id="weeklyPreview"></div>
+            </div>
+
+            <div class="rule-card">
+                <div class="rule-icon">i</div>
+
+                <div class="rule-content">
+                    <strong>Washday Detection Rule</strong>
+
+                    <span>
+                        On selected washdays, UniScan will only verify
+                        the required school lanyard. Other uniform
+                        components will not be evaluated.
+                    </span>
+                </div>
+            </div>
+
+            <div class="last-updated" id="lastUpdated">
+                Last updated: Never
+            </div>
+
             <div class="action-area">
-                <button class="save-btn" onclick="saveWashdays()">SAVE </button>
+                <div class="action-left">
+
+                    <button
+                        class="clear-btn"
+                        onclick="clearWashdays()">
+                        CLEAR ALL
+                    </button>
+
+                    <button
+                        class="save-btn"
+                        id="saveButton"
+                        onclick="saveWashdays()">
+                        SAVE SCHEDULE
+                    </button>
+
+                </div>
+
                 <div id="statusMsg"></div>
             </div>
+
         </div>
     </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import {
-        getAuth,
-        onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import {
-        getFirestore,
-        doc,
-        getDoc
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    <!-- CUSTOM MODAL -->
+    <div
+        class="modal-overlay"
+        id="modalOverlay">
 
-    import { renderSidebar } from "./sidebar.js";
+        <div class="modal-box">
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBmVP7R5XnvqobdxiRv-LpHswhCCVRggX4",
-        authDomain: "thesissystem-921ef.firebaseapp.com",
-        projectId: "thesissystem-921ef",
-        storageBucket: "thesissystem-921ef.firebasestorage.app",
-        messagingSenderId: "62118219774",
-        appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
-    };
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    Confirmation
+                </h3>
+            </div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+            <div class="modal-body">
+                <div id="modalMessage"></div>
+            </div>
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
+            <div class="modal-footer">
 
-  const email = user.email ? user.email.toLowerCase().trim() : "";
+                <button
+                    class="modal-btn modal-cancel"
+                    id="modalCancel"
+                    onclick="closeModal()">
+                    Cancel
+                </button>
 
-  try {
-    const userDocRef = doc(db, "users", email);
-    const userSnap = await getDoc(userDocRef);
+                <button
+                    class="modal-btn modal-confirm"
+                    id="modalConfirm"
+                    onclick="confirmModalAction()">
+                    Confirm
+                </button>
 
-    if (userSnap.exists()) {
-      const userRole = userSnap.data().role;
+            </div>
 
-   
-      if (userRole !== "admin") {
-        alert("Your account role is not authorized.");
-        window.location.href = "login.html";
-        return; 
-      }
+        </div>
+    </div>
 
-      renderSidebar(userRole);
+    <script type="module">
 
-    } else {
-      console.error("User record not found.");
-      alert("Your account role is not authorized.");
-      window.location.href = "login.html";
-    }
+        import { initializeApp } from
+            "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 
-  } catch (error) {
-    console.error("Error fetching user role:", error);
-    window.location.href = "login.html";
-  }
-});
-</script>
-    <script>
-        const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-        const dayGrid = document.getElementById("dayGrid");
-        days.forEach(day => {
-            dayGrid.innerHTML += `
-                <div class="day-item" id="item-${day}" onclick="toggleCheckbox('${day}')">
-                    <input type="checkbox" id="${day}" value="${day}" class="day-checkbox" 
-                           onclick="event.stopPropagation(); updateStyle('${day}')">
-                    <label for="${day}">${day}</label>
-                </div>
-            `;
-        });
+        import {
+            getAuth,
+            onAuthStateChanged
+        } from
+            "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+        import {
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            serverTimestamp
+        } from
+            "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        function toggleCheckbox(day) {
-            const cb = document.getElementById(day);
-            cb.checked = !cb.checked;
-            updateStyle(day);
-        }
+        import { renderSidebar } from "./sidebar.js";
 
-        function updateStyle(day) {
-            const cb = document.getElementById(day);
-            const item = document.getElementById(`item-${day}`);
-            if(cb.checked) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        }
-
-
-        window.onload = () => {
-            const saved = JSON.parse(localStorage.getItem("washdays") || "[]");
-            saved.forEach(day => {
-                const cb = document.getElementById(day);
-                if(cb) {
-                    cb.checked = true;
-                    updateStyle(day);
-                }
-            });
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmVP7R5XnvqobdxiRv-LpHswhCCVRggX4",
+            authDomain: "thesissystem-921ef.firebaseapp.com",
+            projectId: "thesissystem-921ef",
+            storageBucket: "thesissystem-921ef.firebasestorage.app",
+            messagingSenderId: "62118219774",
+            appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
         };
 
-        function saveWashdays() {
-            const selected = Array.from(document.querySelectorAll('.day-checkbox:checked'))
-                                  .map(cb => cb.value);
-            
-            localStorage.setItem("washdays", JSON.stringify(selected));
-            
-            const msg = document.getElementById("statusMsg");
-            msg.textContent = "Successfully Saved!";
-            
-            setTimeout(() => { msg.textContent = ""; }, 3000);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const days = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+        ];
+
+        const dayGrid =
+            document.getElementById("dayGrid");
+
+        const weeklyPreview =
+            document.getElementById("weeklyPreview");
+
+        let modalAction = null;
+
+        /* CREATE DAY CARDS */
+
+        days.forEach(day => {
+
+            dayGrid.innerHTML += `
+                <div
+                    class="day-item"
+                    id="item-${day}"
+                    onclick="toggleCheckbox('${day}')">
+
+                    <span
+                        class="today-indicator"
+                        id="today-${day}">
+                    </span>
+
+                    <input
+                        type="checkbox"
+                        id="${day}"
+                        value="${day}"
+                        class="day-checkbox"
+                        onclick="event.stopPropagation(); updateStyle('${day}')">
+
+                    <label for="${day}">
+                        ${day}
+                    </label>
+
+                    <span
+                        class="day-status"
+                        id="status-${day}">
+                        Regular
+                    </span>
+
+                </div>
+            `;
+
+        });
+
+        /* GET TODAY */
+
+        function getToday() {
+
+            return new Date().toLocaleDateString(
+                "en-US",
+                {
+                    weekday: "long"
+                }
+            );
+
         }
+
+        /* UPDATE TODAY INDICATOR */
+
+        function updateTodayIndicator() {
+
+            const today = getToday();
+
+            days.forEach(day => {
+
+                const indicator =
+                    document.getElementById(
+                        `today-${day}`
+                    );
+
+                indicator.textContent =
+                    day === today
+                        ? "TODAY"
+                        : "";
+
+            });
+
+        }
+
+        /* TOGGLE CHECKBOX */
+
+        function toggleCheckbox(day) {
+
+            const cb =
+                document.getElementById(day);
+
+            cb.checked = !cb.checked;
+
+            updateStyle(day);
+
+        }
+
+        /* UPDATE DAY STYLE */
+
+        function updateStyle(day) {
+
+            const cb =
+                document.getElementById(day);
+
+            const item =
+                document.getElementById(
+                    `item-${day}`
+                );
+
+            const status =
+                document.getElementById(
+                    `status-${day}`
+                );
+
+            if (cb.checked) {
+
+                item.classList.add("active");
+                status.textContent = "Washday";
+
+            } else {
+
+                item.classList.remove("active");
+                status.textContent = "Regular";
+
+            }
+
+            updateSelectedDays();
+            updateWeeklyPreview();
+            updateTodayStatus();
+
+        }
+
+        /* GET SELECTED DAYS */
+
+        function getSelectedDays() {
+
+            return Array.from(
+                document.querySelectorAll(
+                    ".day-checkbox:checked"
+                )
+            ).map(cb => cb.value);
+
+        }
+
+        /* SELECTED DAYS DISPLAY */
+
+        function updateSelectedDays() {
+
+            const selected =
+                getSelectedDays();
+
+            const display =
+                document.getElementById(
+                    "selectedDaysDisplay"
+                );
+
+            if (selected.length === 0) {
+
+                display.innerHTML = `
+                    <span class="none-selected">
+                        None
+                    </span>
+                `;
+
+                return;
+
+            }
+
+            display.innerHTML =
+                selected.map(day => `
+                    <span class="selected-day-tag">
+                        ${day}
+                    </span>
+                `).join("");
+
+        }
+
+        /* WEEKLY PREVIEW */
+
+        function updateWeeklyPreview() {
+
+            const selected =
+                getSelectedDays();
+
+            const today =
+                getToday();
+
+            weeklyPreview.innerHTML = "";
+
+            days.forEach(day => {
+
+                const isWashday =
+                    selected.includes(day);
+
+                const isToday =
+                    day === today;
+
+                weeklyPreview.innerHTML += `
+                    <div
+                        class="preview-day
+                        ${isWashday ? "washday" : ""}
+                        ${isToday ? "today" : ""}">
+
+                        <span class="preview-day-name">
+                            ${day.substring(0, 3).toUpperCase()}
+                        </span>
+
+                        <span class="preview-status">
+                            ${isWashday
+                                ? "Washday"
+                                : "Regular"}
+                        </span>
+
+                    </div>
+                `;
+
+            });
+
+        }
+
+        /* TODAY STATUS */
+
+        function updateTodayStatus() {
+
+            const today =
+                getToday();
+
+            const selected =
+                getSelectedDays();
+
+            const todayIsWashday =
+                selected.includes(today);
+
+            const badge =
+                document.getElementById(
+                    "todayBadge"
+                );
+
+            const todayDate =
+                document.getElementById(
+                    "todayDate"
+                );
+
+            const now = new Date();
+
+            todayDate.textContent =
+                now.toLocaleDateString(
+                    "en-US",
+                    {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric"
+                    }
+                );
+
+            if (todayIsWashday) {
+
+                badge.textContent =
+                    "WASHDAY";
+
+                badge.className =
+                    "today-badge washday";
+
+            } else {
+
+                badge.textContent =
+                    "REGULAR UNIFORM";
+
+                badge.className =
+                    "today-badge regular";
+
+            }
+
+        }
+
+        /* LOAD FROM FIRESTORE */
+
+        async function loadWashdays() {
+
+            try {
+
+                const washdayRef =
+                    doc(db, "settings", "washday");
+
+                const washdaySnap =
+                    await getDoc(washdayRef);
+
+                if (!washdaySnap.exists()) {
+
+                    updateLastUpdated(null);
+
+                    return;
+
+                }
+
+                const data =
+                    washdaySnap.data();
+
+                const savedDays =
+                    Array.isArray(data.days)
+                        ? data.days
+                        : [];
+
+                document
+                    .querySelectorAll(".day-checkbox")
+                    .forEach(cb => {
+                        cb.checked = false;
+                    });
+
+                savedDays.forEach(day => {
+
+                    const cb =
+                        document.getElementById(day);
+
+                    if (cb) {
+                        cb.checked = true;
+                    }
+
+                });
+
+                days.forEach(day => {
+                    updateStyle(day);
+                });
+
+                updateTodayIndicator();
+                updateSelectedDays();
+                updateWeeklyPreview();
+                updateTodayStatus();
+
+                updateLastUpdated(
+                    data.updatedAt
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Error loading washday schedule:",
+                    error
+                );
+
+                showStatus(
+                    "Failed to load washday schedule.",
+                    "#c62828"
+                );
+
+            }
+
+        }
+
+        /* LAST UPDATED */
+
+        function updateLastUpdated(timestamp) {
+
+            const element =
+                document.getElementById(
+                    "lastUpdated"
+                );
+
+            if (!timestamp) {
+
+                element.textContent =
+                    "Last updated: Never";
+
+                return;
+
+            }
+
+            try {
+
+                const date =
+                    timestamp.toDate();
+
+                element.textContent =
+                    "Last updated: " +
+                    date.toLocaleDateString(
+                        "en-US",
+                        {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric"
+                        }
+                    ) +
+                    " at " +
+                    date.toLocaleTimeString(
+                        "en-US",
+                        {
+                            hour: "numeric",
+                            minute: "2-digit"
+                        }
+                    );
+
+            } catch (error) {
+
+                element.textContent =
+                    "Last updated: Unknown";
+
+            }
+
+        }
+
+        /* SAVE TO FIRESTORE */
+
+        async function saveWashdays() {
+
+            const selected =
+                getSelectedDays();
+
+            if (selected.length === 0) {
+
+                openModal(
+                    "Save Schedule",
+                    "No washday is selected. Do you want to save an empty washday schedule?",
+                    "save"
+                );
+
+                return;
+
+            }
+
+            openModal(
+                "Save Schedule",
+                `Save the following washdays?<br><br><strong>${selected.join(", ")}</strong>`,
+                "save"
+            );
+
+        }
+
+        async function performSave() {
+
+            const selected =
+                getSelectedDays();
+
+            const saveButton =
+                document.getElementById(
+                    "saveButton"
+                );
+
+            try {
+
+                saveButton.disabled = true;
+                saveButton.textContent =
+                    "SAVING...";
+
+                await setDoc(
+                    doc(db, "settings", "washday"),
+                    {
+                        days: selected,
+                        updatedAt: serverTimestamp()
+                    }
+                );
+
+                const savedSnap =
+                    await getDoc(
+                        doc(db, "settings", "washday")
+                    );
+
+                if (savedSnap.exists()) {
+
+                    updateLastUpdated(
+                        savedSnap.data().updatedAt
+                    );
+
+                }
+
+                showStatus(
+                    "Schedule successfully saved to Firebase.",
+                    "#2e7d32"
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Error saving washday schedule:",
+                    error
+                );
+
+                showStatus(
+                    "Failed to save washday schedule.",
+                    "#c62828"
+                );
+
+            } finally {
+
+                saveButton.disabled = false;
+                saveButton.textContent =
+                    "SAVE SCHEDULE";
+
+            }
+
+        }
+
+        /* CLEAR ALL */
+
+        function clearWashdays() {
+
+            const selected =
+                getSelectedDays();
+
+            if (selected.length === 0) {
+                return;
+            }
+
+            openModal(
+                "Clear Washdays",
+                "Are you sure you want to clear all selected washdays?",
+                "clear"
+            );
+
+        }
+
+        function performClear() {
+
+            document
+                .querySelectorAll(".day-checkbox")
+                .forEach(cb => {
+
+                    cb.checked = false;
+                    updateStyle(cb.value);
+
+                });
+
+            showStatus(
+                "All washday selections cleared.",
+                "#666"
+            );
+
+        }
+
+        /* MODAL */
+
+        function openModal(
+            title,
+            message,
+            action
+        ) {
+
+            const overlay =
+                document.getElementById(
+                    "modalOverlay"
+                );
+
+            const modalTitle =
+                document.getElementById(
+                    "modalTitle"
+                );
+
+            const modalMessage =
+                document.getElementById(
+                    "modalMessage"
+                );
+
+            const confirmButton =
+                document.getElementById(
+                    "modalConfirm"
+                );
+
+            modalTitle.textContent =
+                title;
+
+            modalMessage.innerHTML =
+                message;
+
+            modalAction =
+                action;
+
+            confirmButton.textContent =
+                action === "clear"
+                    ? "Clear"
+                    : "Confirm";
+
+            confirmButton.className =
+                action === "clear"
+                    ? "modal-btn modal-danger"
+                    : "modal-btn modal-confirm";
+
+            overlay.classList.add("show");
+
+        }
+
+        function closeModal() {
+
+            const overlay =
+                document.getElementById(
+                    "modalOverlay"
+                );
+
+            overlay.classList.remove("show");
+            modalAction = null;
+
+        }
+
+        function confirmModalAction() {
+
+            const action =
+                modalAction;
+
+            closeModal();
+
+            if (action === "save") {
+                performSave();
+            }
+
+            if (action === "clear") {
+                performClear();
+            }
+
+        }
+
+        /* STATUS MESSAGE */
+
+        function showStatus(
+            message,
+            color = "#2e7d32"
+        ) {
+
+            const msg =
+                document.getElementById(
+                    "statusMsg"
+                );
+
+            msg.textContent =
+                message;
+
+            msg.style.color =
+                color;
+
+            setTimeout(() => {
+                msg.textContent = "";
+            }, 3500);
+
+        }
+
+        /* CLOSE MODAL WHEN CLICKING OUTSIDE */
+
+        document
+            .getElementById("modalOverlay")
+            .addEventListener(
+                "click",
+                event => {
+
+                    if (
+                        event.target.id ===
+                        "modalOverlay"
+                    ) {
+                        closeModal();
+                    }
+
+                }
+            );
+
+        /* EXPOSE FUNCTIONS */
+
+        window.toggleCheckbox =
+            toggleCheckbox;
+
+        window.updateStyle =
+            updateStyle;
+
+        window.clearWashdays =
+            clearWashdays;
+
+        window.saveWashdays =
+            saveWashdays;
+
+        window.closeModal =
+            closeModal;
+
+        window.confirmModalAction =
+            confirmModalAction;
+
+        /* INITIAL UI */
+
+        updateTodayIndicator();
+        updateSelectedDays();
+        updateWeeklyPreview();
+        updateTodayStatus();
+
+        /* FIREBASE AUTHORIZATION */
+
+        onAuthStateChanged(
+            auth,
+            async user => {
+
+                if (!user) {
+
+                    window.location.href =
+                        "login.html";
+
+                    return;
+
+                }
+
+                const email =
+                    user.email
+                        ? user.email
+                            .toLowerCase()
+                            .trim()
+                        : "";
+
+                try {
+
+                    const userDocRef =
+                        doc(
+                            db,
+                            "users",
+                            email
+                        );
+
+                    const userSnap =
+                        await getDoc(
+                            userDocRef
+                        );
+
+                    if (!userSnap.exists()) {
+
+                        openModal(
+                            "Access Denied",
+                            "Your account role is not authorized to access this page.",
+                            "none"
+                        );
+
+                        setTimeout(() => {
+                            window.location.href =
+                                "login.html";
+                        }, 1800);
+
+                        return;
+
+                    }
+
+                    const userRole =
+                        userSnap.data().role;
+
+                    if (userRole !== "admin") {
+
+                        openModal(
+                            "Access Denied",
+                            "Your account role is not authorized to access this page.",
+                            "none"
+                        );
+
+                        setTimeout(() => {
+                            window.location.href =
+                                "login.html";
+                        }, 1800);
+
+                        return;
+
+                    }
+
+                    renderSidebar(userRole);
+
+                    await loadWashdays();
+
+                } catch (error) {
+
+                    console.error(
+                        "Error fetching user role:",
+                        error
+                    );
+
+                    openModal(
+                        "System Error",
+                        "Unable to verify your account. Please try again.",
+                        "none"
+                    );
+
+                }
+
+            }
+        );
+
     </script>
+
 </body>
 </html>
+```

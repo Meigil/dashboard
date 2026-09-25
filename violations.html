@@ -1,426 +1,3327 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Uniform Violations | UNISCAN</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uniform Violations | UNISCAN</title>
 
-    .flagged-status {
-      background: #f8d7da;
-      color: #721c24;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 0.8rem;
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+.flagged-status{
+    background:#f8d7da;
+    color:#721c24;
+    padding:4px 10px;
+    border-radius:4px;
+    font-weight:bold;
+    font-size:.8rem;
+}
+
+.counseled-status{
+    background:#d4edda;
+    color:#155724;
+    padding:4px 10px;
+    border-radius:4px;
+    font-weight:bold;
+    font-size:.8rem;
+}
+
+.not-counseled-status{
+    background:#fff3cd;
+    color:#856404;
+    padding:4px 10px;
+    border-radius:4px;
+    font-weight:bold;
+    font-size:.8rem;
+}
+
+.count-circle{
+    background:#003A8F;
+    color:white;
+    padding:2px 8px;
+    border-radius:50%;
+    font-size:.85rem;
+    border:1px solid rgba(0,58,143,.2);
+    cursor:pointer;
+    transition:transform .2s;
+}
+
+.count-circle:hover{
+    transform:scale(1.15);
+}
+
+/* Summary Cards */
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.stat-card{
+    background:#fff;
+    border:1px solid #e9ecef;
+    border-radius:10px;
+    padding:14px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+.stat-card h4{
+    margin:0;
+    font-size:.75rem;
+    text-transform:uppercase;
+    color:#777;
+    letter-spacing:.4px;
+}
+
+.stat-card .stat-value{
+    font-size:1.5rem;
+    font-weight:bold;
+    color:#003A8F;
+    margin-top:5px;
+}
+
+/* Quick Filters */
+.quick-filters{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:15px;
+}
+
+.btn-filter{
+    background:#fff;
+    color:#555;
+    border:1px solid #ddd;
+    padding:7px 14px;
+    border-radius:5px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:.85rem;
+    transition:all .2s;
+}
+
+.btn-filter.active,
+.btn-filter:hover{
+    background:#003A8F;
+    color:#fff;
+    border-color:#003A8F;
+}
+
+/* Analytics */
+.analytics-row{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.analytics-box{
+    background:#fff;
+    border:1px solid #e9ecef;
+    border-radius:10px;
+    padding:15px;
+    color:#333;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+
+.analytics-title{
+    font-size:.95rem;
+    font-weight:bold;
+    color:#003A8F;
+    margin-bottom:12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.chart-container{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+    height:120px;
+    padding-top:20px;
+}
+
+.chart-bar-wrapper{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    height:100%;
+    justify-content:flex-end;
+}
+
+.chart-bar{
+    width:100%;
+    max-width:25px;
+    background:linear-gradient(to top,#003A8F,#00c6ff);
+    border-radius:4px 4px 0 0;
+    min-height:4px;
+    transition:height .3s;
+}
+
+.chart-label{
+    font-size:.7rem;
+    color:#777;
+    margin-top:5px;
+    white-space:nowrap;
+}
+
+.mini-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:.85rem;
+}
+
+.mini-table th,
+.mini-table td{
+    padding:6px 8px;
+    text-align:left;
+    border-bottom:1px solid #eee;
+}
+
+.mini-table th{
+    color:#777;
+    font-weight:600;
+}
+
+/* Extra Filters */
+.extra-filter-row{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:10px;
+    margin-top:10px;
+}
+
+.date-range{
+    display:flex;
+    gap:5px;
+    align-items:center;
+    min-width:0;
+}
+
+.date-range input{
+    min-width:0;
+}
+
+.date-range span{
+    color:#777;
+    font-size:.85rem;
+    flex-shrink:0;
+}
+
+/* New Badge */
+.new-badge{
+    background:#e74c3c;
+    color:#fff;
+    font-size:.65rem;
+    padding:2px 6px;
+    border-radius:10px;
+    margin-left:5px;
+    vertical-align:middle;
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%{opacity:1}
+    50%{opacity:.4}
+    100%{opacity:1}
+}
+
+/* History Modal */
+#imageModal{
+    display:none;
+    position:fixed;
+    z-index:9999;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,58,143,.95);
+    overflow-y:auto;
+    padding:60px 20px;
+    box-sizing:border-box;
+}
+
+.history-container{
+    max-width:800px;
+    margin:0 auto;
+    animation:fadeIn .3s ease-out;
+}
+
+.history-card{
+    display:flex;
+    align-items:center;
+    background:#f8f9fa;
+    border:1px solid #e9ecef;
+    margin-bottom:15px;
+    padding:15px;
+    border-radius:12px;
+    color:#333;
+}
+
+.history-img{
+    width:80px;
+    height:80px;
+    object-fit:cover;
+    border-radius:8px;
+    border:2px solid #FFD400;
+    cursor:zoom-in;
+}
+
+.history-info{
+    margin-left:20px;
+    flex-grow:1;
+    color:#333;
+    min-width:0;
+}
+
+.close-btn{
+    position:fixed;
+    top:20px;
+    right:30px;
+    font-size:35px;
+    color:white;
+    cursor:pointer;
+    z-index:10000;
+}
+
+#zoomModal{
+    display:none;
+    position:fixed;
+    z-index:10001;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.95);
+    justify-content:center;
+    align-items:center;
+    cursor:zoom-out;
+}
+
+.student-photo{
+    width:50px;
+    height:50px;
+    object-fit:cover;
+    border-radius:8px;
+    border:2px solid #FFD400;
+    cursor:zoom-in;
+    display:block;
+}
+
+#studentSearch{
+    color:#000!important;
+}
+
+/* Student Profile Modal */
+.profile-header{
+    display:flex;
+    gap:20px;
+    align-items:center;
+    border-bottom:2px solid #f0f0f0;
+    padding-bottom:15px;
+    margin-bottom:20px;
+}
+
+.profile-photo{
+    width:90px;
+    height:90px;
+    border-radius:10px;
+    object-fit:cover;
+    border:3px solid #003A8F;
+    flex-shrink:0;
+}
+
+.profile-name{
+    margin:0;
+    color:#003A8F;
+}
+
+.profile-info{
+    margin:4px 0;
+    color:#666;
+}
+
+.profile-badge{
+    background:#003A8F;
+    color:white;
+    padding:3px 10px;
+    border-radius:12px;
+    font-size:.8rem;
+    font-weight:bold;
+}
+
+.history-scroll{
+    max-height:400px;
+    overflow-y:auto;
+    padding-right:5px;
+}
+
+.history-status{
+    font-size:.75rem;
+    padding:2px 8px;
+    border-radius:4px;
+    white-space:nowrap;
+}
+
+.history-status.counseled{
+    background:#d4edda;
+    color:#155724;
+}
+
+.history-status.pending{
+    background:#fff3cd;
+    color:#856404;
+}
+
+.history-note{
+    font-size:.85rem;
+    background:#f1f5f9;
+    padding:6px;
+    border-radius:4px;
+    margin-top:6px;
+    color:#334155;
+}
+
+.reset-note{
+    font-size:.75rem;
+    color:#27ae60;
+    font-weight:bold;
+    margin-top:4px;
+}
+
+/* =========================================
+   FILTER LAYOUT
+   ========================================= */
+
+.filter-box{
+    width:100%;
+    box-sizing:border-box;
+}
+
+.filter-box > div:first-child{
+    width:100%;
+    display:grid!important;
+    grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)!important;
+    gap:10px!important;
+    align-items:center;
+}
+
+.filter-box .extra-filter-row{
+    width:100%;
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:10px!important;
+}
+
+.filter-box .filter-group{
+    min-width:0;
+}
+
+.filter-box input,
+.filter-box select{
+    max-width:100%;
+    box-sizing:border-box;
+}
+
+
+/* =========================================
+   PRINT
+   ========================================= */
+
+
+
+
+/* =========================================
+   LARGE DESKTOP
+   ========================================= */
+
+@media (min-width:1200px){
+
+    .main-content{
+        padding:24px 30px;
     }
-    .pending-status {
-      color: #FFD400;
-      font-weight: bold;
+
+    .stats-grid{
+        gap:16px;
     }
-    .count-circle {
-      background: #003A8F;
-      color: white;
-      padding: 2px 8px;
-      border-radius: 50%;
-      font-size: 0.85rem;
-      border: 1px solid rgba(0,58,143,0.2);
+
+    .stat-card{
+        padding:18px;
+    }
+
+    .analytics-row{
+        grid-template-columns:2fr 1fr;
+        gap:20px;
+    }
+
+    .analytics-box{
+        padding:18px;
+    }
+
+    .filter-box{
+        padding:18px;
+    }
+
+    .filter-box > div:first-child{
+        grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)!important;
+    }
+
+    .filter-box .extra-filter-row{
+        grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    }
+}
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width:1000px){
+
+    .stats-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+
+    .analytics-row{
+        grid-template-columns:1fr;
+    }
+
+    .filter-box > div:first-child{
+        grid-template-columns:1fr 1fr!important;
+    }
+
+    .filter-box .extra-filter-row{
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    }
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width:768px){
+
+    .main-content{
+        width:100%;
+        margin-left:0;
+        padding:15px;
+        box-sizing:border-box;
+    }
+
+    /* Page Header */
+    .main-content > div:first-child{
+        align-items:flex-start!important;
+    }
+
+    .main-content > div:first-child h1{
+        font-size:1.45rem;
+    }
+
+    .main-content > div:first-child .subtitle{
+        font-size:.8rem;
+        line-height:1.4;
+    }
+
+    .main-content > div:first-child > div:last-child{
+        width:100%;
+    }
+
+    .main-content > div:first-child > div:last-child button{
+        flex:1;
+        min-width:0;
+        padding:9px 8px!important;
+        font-size:.78rem;
     }
 
 
-    #imageModal {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,58,143,0.95);
-      overflow-y: auto;
-      padding: 60px 20px;
+    /* Summary Cards */
+    .stats-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:8px;
+        margin-bottom:15px;
     }
 
-    .history-container {
-      max-width: 800px;
-      margin: 0 auto;
-      animation: fadeIn 0.3s ease-out;
+    .stat-card{
+        padding:11px 8px;
+        border-radius:8px;
     }
 
-    .history-card {
-      display: flex;
-      align-items: center;
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      margin-bottom: 15px;
-      padding: 15px;
-      border-radius: 12px;
+    .stat-card h4{
+        font-size:.65rem;
+        line-height:1.2;
     }
 
-    .history-img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 8px;
-      border: 2px solid #FFD400;
-      cursor: zoom-in;
+    .stat-card .stat-value{
+        font-size:1.25rem;
     }
 
-    .history-info { margin-left: 20px; flex-grow: 1; color: #333; }
 
-    .close-btn {
-      position: fixed;
-      top: 20px;
-      right: 30px;
-      font-size: 35px;
-      color: white;
-      cursor: pointer;
-      z-index: 10000;
+    /* Analytics */
+    .analytics-row{
+        grid-template-columns:1fr;
+        gap:10px;
+        margin-bottom:15px;
     }
 
-    #zoomModal {
-      display: none;
-      position: fixed;
-      z-index: 10001;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.95);
-      justify-content: center; align-items: center;
-      cursor: zoom-out;
+    .analytics-box{
+        padding:12px;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .analytics-title{
+        font-size:.82rem;
+        margin-bottom:8px;
     }
+
+    .chart-container{
+        height:100px;
+        gap:5px;
+        padding-top:10px;
+    }
+
+    .chart-label{
+        font-size:.6rem;
+    }
+
+    .mini-table{
+        font-size:.75rem;
+    }
+
+    .mini-table th,
+    .mini-table td{
+        padding:5px 6px;
+    }
+
+
+    /* Quick Filters */
+    .quick-filters{
+        gap:6px;
+        margin-bottom:10px;
+    }
+
+    .btn-filter{
+        flex:1 1 calc(50% - 6px);
+        min-width:0;
+        padding:8px 6px;
+        font-size:.72rem;
+    }
+
+
+    /* Filter Box */
+    .filter-box{
+        padding:12px!important;
+        margin-bottom:15px!important;
+    }
+
+    /* Search + Date */
+    .filter-box > div:first-child{
+        display:grid!important;
+        grid-template-columns:1fr!important;
+        gap:10px!important;
+    }
+
+    .filter-box .search-box{
+        width:100%!important;
+        min-width:0!important;
+    }
+
+    .filter-box .date-range{
+        width:100%!important;
+        display:grid!important;
+        grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+        gap:6px!important;
+    }
+
+    .filter-box .date-range input{
+        width:100%!important;
+        min-width:0!important;
+    }
+
+    .filter-box .date-range span{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+
+
+    /* Program / Year / Type / Sort */
+    .filter-box .extra-filter-row{
+        display:grid!important;
+        grid-template-columns:1fr!important;
+        gap:10px!important;
+        margin-top:10px!important;
+    }
+
+    .filter-box .filter-group{
+        width:100%;
+        min-width:0;
+    }
+
+    .filter-box .filter-group label{
+        font-size:.75rem;
+    }
+
+    .filter-box .filter-group .filter{
+        width:100%!important;
+    }
+
+    .filter-box input,
+    .filter-box select{
+        width:100%;
+        box-sizing:border-box;
+    }
+
+
+    /* Table */
+    .main-content{
+        overflow-x:hidden;
+    }
+
+    table{
+        display:block;
+        width:100%;
+        overflow-x:auto;
+        white-space:nowrap;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    table th,
+    table td{
+        font-size:.75rem;
+        padding:8px 7px;
+    }
+
+    .student-photo{
+        width:40px;
+        height:40px;
+    }
+
+
+    /* History Modal */
+    #imageModal{
+        padding:55px 10px 20px;
+    }
+
+    .history-container{
+        width:100%;
+        max-width:none;
+    }
+
+    .history-card{
+        padding:10px;
+        margin-bottom:10px;
+        border-radius:9px;
+    }
+
+    .history-img{
+        width:60px;
+        height:60px;
+    }
+
+    .history-info{
+        margin-left:10px;
+        min-width:0;
+    }
+
+    .close-btn{
+        top:10px;
+        right:15px;
+        font-size:30px;
+    }
+
+    .profile-header{
+        gap:10px;
+        padding-bottom:10px;
+        margin-bottom:12px;
+    }
+
+    .profile-photo{
+        width:65px;
+        height:65px;
+    }
+
+    .profile-name{
+        font-size:1rem;
+    }
+
+    .profile-info{
+        font-size:.75rem;
+    }
+
+    .history-scroll{
+        max-height:350px;
+    }
+}
+
+
+/* =========================================
+   VERY SMALL PHONES
+   ========================================= */
+
+@media (max-width:480px){
+
+    .main-content{
+        padding:10px;
+    }
+
+    .main-content > div:first-child h1{
+        font-size:1.25rem;
+    }
+
+    .main-content > div:first-child .subtitle{
+        font-size:.72rem;
+    }
+
+    .main-content > div:first-child > div:last-child{
+        flex-direction:column;
+    }
+
+    .main-content > div:first-child > div:last-child button{
+        width:100%;
+        flex:none;
+    }
+
+
+    /* Summary */
+    .stats-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:6px;
+    }
+
+    .stat-card{
+        padding:9px 5px;
+    }
+
+    .stat-card h4{
+        font-size:.58rem;
+    }
+
+    .stat-card .stat-value{
+        font-size:1.1rem;
+    }
+
+
+    /* Quick Filters */
+    .btn-filter{
+        flex:1 1 100%;
+        min-width:100%;
+    }
+
+
+    /* Analytics */
+    .analytics-title{
+        font-size:.75rem;
+    }
+
+    .chart-container{
+        height:85px;
+    }
+
+    .mini-table{
+        font-size:.7rem;
+    }
+
+
+    /* Filters */
+    .filter-box{
+        padding:10px!important;
+    }
+
+    .filter-box > div:first-child{
+        grid-template-columns:1fr!important;
+    }
+
+    .filter-box .date-range{
+        grid-template-columns:1fr!important;
+    }
+
+    .filter-box .date-range span{
+        display:none;
+    }
+
+    .filter-box .extra-filter-row{
+        grid-template-columns:1fr!important;
+    }
+}
+
+
+/* =========================================
+   ANIMATION
+   ========================================= */
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
 </style>
 </head>
+
 <body>
 
 <div class="sidebar"></div>
 
 <div class="main-content">
-  <h1>Uniform Violations</h1>
-  <p class="subtitle">Repeat offenders summary and student history</p>
 
-<div class="filter-box" style="margin-bottom: 20px;">
+    <!-- PAGE HEADER -->
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:15px">
 
-  <input
-    type="text"
-    id="studentSearch"
-    class="search-box"
-    placeholder="Search ID, Name, or Program..."
-  >
+        <div>
+            <h1 style="margin:0">Uniform Violations</h1>
+            <p class="subtitle" style="margin:0">
+                Repeat offenders summary and student history
+            </p>
+        </div>
 
-  <div class="filters-container">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
 
-    <div class="filter-group">
-      <label>Select Program</label>
-      <select class="filter" id="programFilter">
-        <option value="all">All Programs</option>
+<button
+    onclick="exportToCSV()"
+    style="background:#27ae60;color:white;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:bold"
+>
+    Export CSV
+</button>
 
-        <optgroup label="Senior High School">
-          <option value="ABM">Accountancy, Business, and Management (ABM)</option>
-          <option value="HUMSS">Humanities and Social Sciences (HUMSS)</option>
-          <option value="IT-MAWD">IT in Mobile App and Web Development (IT-MAWD)</option>
-          <option value="CCT">Computer and Communications Technology (CCT)</option>
-          <option value="TOPER">Tourism Operations (TOPER)</option>
-          <option value="CULART">Culinary Arts (CULART)</option>
-        </optgroup>
 
-        <optgroup label="Tertiary Programs">
-          <option value="BSCS">Bachelor of Science in Computer Science (BSCS)</option>
-          <option value="BSIT">Bachelor of Science in Information Technology (BSIT)</option>
-          <option value="BSBA">Bachelor of Science in Business Administration (BSBA)</option>
-          <option value="BSAIS">Bachelor of Science in Accounting Information System (BSAIS)</option>
-          <option value="BSA">Bachelor of Science in Accountancy (BSA)</option>
-          <option value="BSHM">Bachelor of Science in Hospitality Management (BSHM)</option>
-          <option value="BACOMM">Bachelor of Arts in Communication (BACOMM)</option>
-          <option value="BMMA">Bachelor of Multimedia Arts (BMMA)</option>
-          <option value="BSTM">Bachelor of Science in Tourism Management (BSTM)</option>
-        </optgroup>
+        </div>
 
-      </select>
     </div>
 
 
-    <div class="filter-group">
-      <label>Select Grade / Year</label>
+    <!-- SUMMARY CARDS -->
+    <div class="stats-grid">
 
-      <select class="filter" id="yearFilter">
-        <option value="all">All Levels</option>
+        <div class="stat-card">
+            <h4>Total Students</h4>
+            <div class="stat-value" id="statTotal">0</div>
+        </div>
 
-        <optgroup label="Senior High School">
-          <option value="Grade 11">Grade 11</option>
-          <option value="Grade 12">Grade 12</option>
-        </optgroup>
+        <div class="stat-card">
+            <h4>1st Offense</h4>
+            <div class="stat-value" id="stat1st" style="color:#f39c12">0</div>
+        </div>
 
-        <optgroup label="College">
-          <option value="1st Year">1st Year</option>
-          <option value="2nd Year">2nd Year</option>
-          <option value="3rd Year">3rd Year</option>
-          <option value="4th Year">4th Year</option>
-        </optgroup>
+        <div class="stat-card">
+            <h4>2nd Offense</h4>
+            <div class="stat-value" id="stat2nd" style="color:#e67e22">0</div>
+        </div>
 
-      </select>
+        <div class="stat-card">
+            <h4>3rd Offense</h4>
+            <div class="stat-value" id="stat3rd" style="color:#e74c3c">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h4>Needs Counseling</h4>
+            <div class="stat-value" id="statNeeds" style="color:#e74c3c">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h4>Counseled</h4>
+            <div class="stat-value" id="statCounseled" style="color:#2ecc71">0</div>
+        </div>
+
     </div>
 
-  </div>
 
-</div>
+    <!-- ANALYTICS -->
+    <div class="analytics-row">
 
-<div id="violationsWrapper"></div>
+        <div class="analytics-box">
 
-<div id="noViolationsMessage"
-     style="display:none; text-align:center; margin-top:50px; color:#777;">
-  <h3>No violations found</h3>
-</div>
+            <div class="analytics-title">
+                <i class="fa-solid fa-chart-line"></i>
+                Recent Violation Trend (Last 7 Days)
+            </div>
+
+            <div
+                class="chart-container"
+                id="trendChart"
+            ></div>
+
+        </div>
+
+
+        <div class="analytics-box">
+
+            <div class="analytics-title">
+                <i class="fa-solid fa-graduation-cap"></i>
+                Violations per Program
+            </div>
+
+            <div style="max-height:120px;overflow-y:auto">
+
+                <table class="mini-table">
+
+                    <thead>
+                        <tr>
+                            <th>Program</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="programSummaryBody"></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- QUICK FILTERS -->
+    <div class="quick-filters">
+
+        <button
+            class="btn-filter active"
+            onclick="setQuickFilter('all',this)"
+        >
+            All Students
+        </button>
+
+        <button
+            class="btn-filter"
+            onclick="setQuickFilter('needs',this)"
+        >
+            Needs Counseling
+        </button>
+
+        <button
+            class="btn-filter"
+            onclick="setQuickFilter('counseled',this)"
+        >
+            Counseled
+        </button>
+
+        <button
+            class="btn-filter"
+            onclick="setQuickFilter('3rd',this)"
+        >
+            3rd Offense
+        </button>
+
+    </div>
+
+
+    <!-- FILTER BOX -->
+    <div
+        class="filter-box"
+        style="margin-bottom:20px"
+    >
+
+        <!-- SEARCH + DATE -->
+        <div
+            style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px"
+        >
+
+            <input
+                type="text"
+                id="studentSearch"
+                class="search-box"
+                placeholder="Search ID, Name, or Program..."
+            >
+
+            <div class="date-range">
+
+                <input
+                    type="date"
+                    id="dateFrom"
+                    class="filter"
+                    style="padding:6px"
+                >
+
+                <span>to</span>
+
+                <input
+                    type="date"
+                    id="dateTo"
+                    class="filter"
+                    style="padding:6px"
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- EXTRA FILTERS -->
+        <div class="extra-filter-row">
+
+            <!-- PROGRAM -->
+            <div class="filter-group">
+
+                <label>Select Program</label>
+
+                <select
+                    class="filter"
+                    id="programFilter"
+                >
+
+                    <option value="all">
+                        All Programs
+                    </option>
+
+                    <optgroup label="Senior High School">
+
+                        <option value="ABM">
+                            Accountancy, Business, and Management (ABM)
+                        </option>
+
+                        <option value="HUMSS">
+                            Humanities and Social Sciences (HUMSS)
+                        </option>
+
+                        <option value="IT-MAWD">
+                            IT in Mobile App and Web Development (IT-MAWD)
+                        </option>
+
+                        <option value="CCT">
+                            Computer and Communications Technology (CCT)
+                        </option>
+
+                        <option value="TOPER">
+                            Tourism Operations (TOPER)
+                        </option>
+
+                        <option value="CULART">
+                            Culinary Arts (CULART)
+                        </option>
+
+                    </optgroup>
+
+
+                    <optgroup label="Tertiary Programs">
+
+                        <option value="BSCS">
+                            Bachelor of Science in Computer Science (BSCS)
+                        </option>
+
+                        <option value="BSIT">
+                            Bachelor of Science in Information Technology (BSIT)
+                        </option>
+
+                        <option value="BSBA">
+                            Bachelor of Science in Business Administration (BSBA)
+                        </option>
+
+                        <option value="BSAIS">
+                            Bachelor of Science in Accounting Information System (BSAIS)
+                        </option>
+
+                        <option value="BSA">
+                            Bachelor of Science in Accountancy (BSA)
+                        </option>
+
+                        <option value="BSHM">
+                            Bachelor of Science in Hospitality Management (BSHM)
+                        </option>
+
+                        <option value="BACOMM">
+                            Bachelor of Arts in Communication (BACOMM)
+                        </option>
+
+                        <option value="BMMA">
+                            Bachelor of Multimedia Arts (BMMA)
+                        </option>
+
+                        <option value="BSTM">
+                            Bachelor of Science in Tourism Management (BSTM)
+                        </option>
+
+                    </optgroup>
+
+                </select>
+
+            </div>
+
+
+            <!-- YEAR -->
+            <div class="filter-group">
+
+                <label>Select Grade / Year</label>
+
+                <select
+                    class="filter"
+                    id="yearFilter"
+                >
+
+                    <option value="all">
+                        All Levels
+                    </option>
+
+                    <optgroup label="Senior High School">
+
+                        <option value="Grade 11">
+                            Grade 11
+                        </option>
+
+                        <option value="Grade 12">
+                            Grade 12
+                        </option>
+
+                    </optgroup>
+
+
+                    <optgroup label="College">
+
+                        <option value="1st Year">
+                            1st Year
+                        </option>
+
+                        <option value="2nd Year">
+                            2nd Year
+                        </option>
+
+                        <option value="3rd Year">
+                            3rd Year
+                        </option>
+
+                        <option value="4th Year">
+                            4th Year
+                        </option>
+
+                    </optgroup>
+
+                </select>
+
+            </div>
+
+
+            <!-- VIOLATION TYPE -->
+      
+
+
+            <!-- SORT -->
+            <div class="filter-group">
+
+                <label>Sort By</label>
+
+                <select
+                    class="filter"
+                    id="sortFilter"
+                >
+
+                    <option value="newest">
+                        Latest Violation
+                    </option>
+
+                    <option value="oldest">
+                        Oldest Violation
+                    </option>
+
+                    <option value="highest">
+                        Highest Offense Count
+                    </option>
+
+                    <option value="name">
+                        Student Name (A-Z)
+                    </option>
+
+                    <option value="program">
+                        Program (A-Z)
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div id="violationsWrapper"></div>
+
+
+    <!-- TABLE -->
     <table>
-      <thead>
-        <tr>
-          <th>Student ID</th>
-          <th>Name</th>
-          <th>Program & Year</th>
-          <th>Total Records</th>
-          <th>Offense Category</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="violationTableBody"></tbody>
+
+        <thead>
+
+            <tr>
+                <th>Photo</th>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Program & Year</th>
+                <th>Total Records</th>
+                <th>Offense Category</th>
+                <th>Status</th>
+                <th class="action-cell">Action</th>
+            </tr>
+
+        </thead>
+
+
+        <tbody id="violationTableBody">
+
+            <tr
+                id="noViolationsMessage"
+                style="display:none"
+            >
+
+                <td
+                    colspan="8"
+                    style="text-align:center;padding:40px;color:#777"
+                >
+
+                    <h3 style="margin:0">
+                        No violations found
+                    </h3>
+
+                </td>
+
+            </tr>
+
+        </tbody>
+
     </table>
-  </div>
+
 </div>
 
+
+<!-- STUDENT PROFILE / HISTORY MODAL -->
 <div id="imageModal">
-    <span class="close-btn" onclick="closeModal()">&times;</span>
-    <div id="modalContent" class="history-container"></div>
+
+    <span
+        class="close-btn"
+        onclick="closeModal()"
+    >
+        ×
+    </span>
+
+    <div
+        id="modalContent"
+        class="history-container"
+    ></div>
+
 </div>
 
-<div id="zoomModal" onclick="this.style.display='none'">
-    <img id="zoomedImg" src="" style="max-width: 90%; max-height: 90%; border-radius: 10px; border: 3px solid #00c6ff;">
+
+<!-- IMAGE ZOOM -->
+<div
+    id="zoomModal"
+    onclick="this.style.display='none'"
+>
+
+    <img
+        id="zoomedImg"
+        src=""
+        style="max-width:90%;max-height:90%;border-radius:10px;border:3px solid #00c6ff"
+    >
+
 </div>
+
 
 <script type="module" src="sidebar.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<!--
+    KEEP YOUR EXISTING JAVASCRIPT BELOW THIS LINE.
+    WALA AKONG BINAGO SA JS / FUNCTIONS / FLOW.
+-->
+
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { 
-    getAuth, 
-    onAuthStateChanged 
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-  import { 
-    getFirestore, 
-    collection, 
-    query, 
-    orderBy, 
-    onSnapshot,
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+
+import {
+    getAuth,
+    onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    collection,
+    query,
+    orderBy,
     doc,
-    getDoc
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    getDoc,
+    where,
+    getDocs,
+    updateDoc
+}
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBmVP7R5XnvqobdxiRv-LpHswhCCVRggX4",
-    authDomain: "thesissystem-921ef.firebaseapp.com",
-    projectId: "thesissystem-921ef",
-    storageBucket: "thesissystem-921ef.appspot.com",
-    messagingSenderId: "62118219774",
-    appId: "1:62118219774:web:1b58fcbf0f4e4d0f87faaf"
-  };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const firebaseConfig = {
+    apiKey:"AIzaSyBmVP7R5XnvqobdxiRv-LpHswhCCVRggX4",
+    authDomain:"thesissystem-921ef.firebaseapp.com",
+    projectId:"thesissystem-921ef",
+    storageBucket:"thesissystem-921ef.appspot.com",
+    messagingSenderId:"62118219774",
+    appId:"1:62118219774:web:1b58fcbf0f87faaf"
+};
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
 
-  const email = user.email ? user.email.toLowerCase().trim() : "";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  try {
-    const userDocRef = doc(db, "users", email);
-    const userSnap = await getDoc(userDocRef);
 
-    if (userSnap.exists()) {
-      const userRole = userSnap.data().role;
+let allRecords = [];
+let studentProfiles = {};
+let activeQuickFilter = "all";
 
-   
-      if (userRole !== "guidance") {
-        alert("Your account role is not authorized.");
-        window.location.href = "login.html";
-        return; 
-      }
 
-      renderSidebar(userRole);
+/* =========================================
+   LOAD VIOLATION DATA
+   ONE-TIME LOAD ONLY
+   ========================================= */
 
-    } else {
-      console.error("User record not found.");
-      alert("Your account role is not authorized.");
-      window.location.href = "login.html";
+async function loadViolationData(){
+
+    try{
+
+        const attendanceQuery = query(
+            collection(db,"attendance"),
+            orderBy("timestamp","desc")
+        );
+
+        const [attendanceSnapshot,studentsSnapshot] =
+            await Promise.all([
+
+                getDocs(attendanceQuery),
+
+                getDocs(
+                    collection(db,"students")
+                )
+
+            ]);
+
+
+        /* LOAD ATTENDANCE */
+
+        allRecords =
+            attendanceSnapshot.docs.map(docSnap => ({
+
+                id:docSnap.id,
+
+                ...docSnap.data()
+
+            }));
+
+
+        /* LOAD STUDENT PROFILES */
+
+        studentProfiles = {};
+
+
+        studentsSnapshot.forEach(docSnap => {
+
+            const student =
+                docSnap.data();
+
+
+            if(student.studentId){
+
+                studentProfiles[
+                    student.studentId
+                ] = student;
+
+            }
+
+        });
+
+
+        /* RENDER ONLY ONCE */
+
+        renderViolations();
+
+
+    }catch(error){
+
+        console.error(
+            "Error loading violation data:",
+            error
+        );
+
+
+        const tbody =
+            document.getElementById(
+                "violationTableBody"
+            );
+
+
+        tbody.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="8"
+                    style="
+                        text-align:center;
+                        padding:40px;
+                        color:#e74c3c
+                    "
+                >
+
+                    <h3 style="margin:0">
+                        Failed to load violation records
+                    </h3>
+
+                    <p style="margin-top:8px">
+                        Please refresh the page and try again.
+                    </p>
+
+                </td>
+
+            </tr>
+
+        `;
+
     }
 
-  } catch (error) {
-    console.error("Error fetching user role:", error);
-    window.location.href = "login.html";
-  }
+}
+
+
+/* LOAD DATA */
+
+loadViolationData();
+
+/* FILTER EVENTS */
+
+document.getElementById("studentSearch")
+    .addEventListener("input",renderViolations);
+
+document.getElementById("programFilter")
+    .addEventListener("change",renderViolations);
+
+document.getElementById("yearFilter")
+    .addEventListener("change",renderViolations);
+
+
+document.getElementById("sortFilter")
+    .addEventListener("change",renderViolations);
+
+document.getElementById("dateFrom")
+    .addEventListener("change",renderViolations);
+
+document.getElementById("dateTo")
+    .addEventListener("change",renderViolations);
+
+
+/* AUTH */
+
+onAuthStateChanged(auth,async user => {
+
+    if(!user){
+
+        window.location.href = "login.html";
+
+        return;
+    }
+
+    const email = user.email
+        ? user.email.toLowerCase().trim()
+        : "";
+
+    try{
+
+        const userDocRef = doc(db,"users",email);
+        const userSnap = await getDoc(userDocRef);
+
+        if(userSnap.exists()){
+
+            const userRole = userSnap.data().role;
+
+            if(userRole !== "guidance"){
+
+                alert("Your account role is not authorized.");
+
+                window.location.href = "login.html";
+
+                return;
+            }
+
+            if(typeof renderSidebar === "function"){
+                renderSidebar(userRole);
+            }
+
+        }else{
+
+            alert("Your account role is not authorized.");
+
+            window.location.href = "login.html";
+        }
+
+    }catch(error){
+
+        console.error("Error fetching user role:",error);
+
+        window.location.href = "login.html";
+    }
+
 });
 
-    let allRecords = [];
-    const q = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
 
-    onSnapshot(q, (snapshot) => {
-        allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderViolations();
+/* QUICK FILTER */
+
+window.setQuickFilter = (filter,button) => {
+
+    activeQuickFilter = filter;
+
+    document
+        .querySelectorAll(".btn-filter")
+        .forEach(btn => btn.classList.remove("active"));
+
+    button.classList.add("active");
+
+    renderViolations();
+
+};
+
+
+/* MAIN RENDER */
+
+function renderViolations(){
+
+    const searchFilter =
+        document.getElementById("studentSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const selectedProgram =
+        document.getElementById("programFilter").value;
+
+    const selectedYear =
+        document.getElementById("yearFilter").value;
+
+
+
+    const sortOption =
+        document.getElementById("sortFilter").value;
+
+    const dateFrom =
+        document.getElementById("dateFrom").value;
+
+    const dateTo =
+        document.getElementById("dateTo").value;
+
+
+    const tbody =
+        document.getElementById("violationTableBody");
+
+    tbody.innerHTML = "";
+
+
+    const grouped = {};
+
+
+    /*
+     * IMPORTANT:
+     * Group ALL violation records first.
+     * Date/type filters are applied later.
+     * This prevents counseledAt/reset logic from breaking.
+     */
+
+    allRecords.forEach(rec => {
+
+        const hasViolation =
+            rec.violationType &&
+            rec.violationType !== "None";
+
+        if(!hasViolation || !rec.studentId){
+            return;
+        }
+
+
+        const profile =
+            studentProfiles[rec.studentId];
+
+
+        if(!grouped[rec.studentId]){
+
+            grouped[rec.studentId] = {
+
+                name:
+                    rec.studentName ||
+                    profile?.fullName ||
+                    "Unknown",
+
+                id:rec.studentId,
+
+                program:
+                    rec.programLevel ||
+                    profile?.course ||
+                    "N/A",
+
+                year:
+                    rec.yearLevel ||
+                    profile?.yearLevel ||
+                    "N/A",
+
+                photo:
+                    profile?.imageBase64 ||
+                    "default.jpg",
+
+                logs:[]
+            };
+        }
+
+
+        grouped[rec.studentId].logs.push(rec);
+
     });
-async function renderViolations() {
-        const tbody = document.getElementById("violationTableBody");
-        const searchFilter = document.getElementById("studentSearch").value.toLowerCase();
-        tbody.innerHTML = "";
 
-        const grouped = {};
-        
-allRecords.forEach(rec => {
 
-    const hasViolation =
-        rec.violationType &&
-        rec.violationType !== "None";
+    let studentList = Object.values(grouped);
 
-    if (hasViolation && rec.studentId) {
-                if (!grouped[rec.studentId]) {
-                    grouped[rec.studentId] = {
-                        name: rec.studentName || "Unknown",
-                        id: rec.studentId,
-                        program: rec.programLevel || "N/A",
-                        logs: []
-                    };
-                }
-                grouped[rec.studentId].logs.push(rec);
-            }
+
+    let countTotal = 0;
+    let count1st = 0;
+    let count2nd = 0;
+    let count3rd = 0;
+    let countNeeds = 0;
+    let countCounseled = 0;
+
+    const programCounts = {};
+
+    const processedStudents = [];
+
+
+    /*
+     * PROCESS STUDENTS
+     */
+
+    studentList.forEach(student => {
+
+        const resetDates = student.logs
+            .map(log =>
+                log.counseledAt
+                    ? new Date(log.counseledAt)
+                    : null
+            )
+            .filter(date =>
+                date &&
+                !isNaN(date.getTime())
+            )
+            .sort((a,b) => b-a);
+
+
+        const lastResetDate =
+            resetDates[0] || null;
+
+
+        /*
+         * ACTIVE VIOLATIONS
+         *
+         * 1st counseled -> remains active
+         * 2nd counseled -> remains active
+         * 3rd counseled -> counseledAt resets count
+         */
+
+        const activeLogs =
+            student.logs
+                .filter(log => {
+
+                    if(
+                        !log.violationType ||
+                        log.violationType === "None"
+                    ){
+                        return false;
+                    }
+
+                    if(!lastResetDate){
+                        return true;
+                    }
+
+                    const timestamp =
+                        log.timestamp?.toDate?.();
+
+                    return (
+                        timestamp &&
+                        timestamp > lastResetDate
+                    );
+
+                })
+                .sort((a,b) => {
+
+                    const dateA =
+                        a.timestamp?.toDate?.() ||
+                        new Date(0);
+
+                    const dateB =
+                        b.timestamp?.toDate?.() ||
+                        new Date(0);
+
+                    return dateA - dateB;
+                });
+
+
+        const count = activeLogs.length;
+
+
+        const latestViolation =
+            activeLogs[activeLogs.length - 1] ||
+            student.logs[0];
+
+
+        const isCounseled =
+            latestViolation?.counselingStatus === "Counseled";
+
+
+        const latestTime =
+            latestViolation?.timestamp?.toDate?.() ||
+            new Date(0);
+
+
+        const isRecent =
+            latestTime.getTime() > 0 &&
+            (new Date() - latestTime) <
+            (24 * 60 * 60 * 1000);
+
+
+        /*
+         * ANALYTICS
+         */
+
+        countTotal++;
+
+
+        if(count === 1){
+            count1st++;
+        }
+        else if(count === 2){
+            count2nd++;
+        }
+        else if(count >= 3){
+            count3rd++;
+        }
+
+
+        if(count > 0 && !isCounseled){
+            countNeeds++;
+        }
+        else if(isCounseled){
+            countCounseled++;
+        }
+
+
+        const programKey =
+            student.program || "Other";
+
+
+        programCounts[programKey] =
+            (programCounts[programKey] || 0) + 1;
+
+
+        /*
+         * Check if student has violation
+         * matching current date/type filters.
+         */
+
+
+
+        processedStudents.push({
+
+            ...student,
+
+            activeCount:count,
+
+            activeLogs,
+
+            
+
+            latestViolation,
+
+            isCounseled,
+
+            latestTime,
+
+            isRecent
         });
 
-  for (const student of Object.values(grouped)) {
-            const matchesSearch = student.id.toLowerCase().includes(searchFilter) || 
-                                 student.name.toLowerCase().includes(searchFilter) ||
-                                 student.program.toLowerCase().includes(searchFilter);
-if (matchesSearch) {
+    });
 
-const lastCounseled = student.logs
-    .map(log => log.counseledAt ? new Date(log.counseledAt) : null)
-    .filter(Boolean)
-    .sort((a, b) => b - a)[0];
 
-const activeLogs = lastCounseled
-    ? student.logs.filter(log =>
-          log.timestamp?.toDate?.() > lastCounseled &&
-          log.violationType &&
-          log.violationType !== "None"
-      )
-    : student.logs.filter(log =>
-          log.violationType &&
-          log.violationType !== "None"
-      );
+    /*
+     * SUMMARY CARDS
+     */
 
-    const count = activeLogs.length;
-    const isFlagged = count >= 3;
-    const offense = getOffenseCategory(count);
+    document.getElementById("statTotal").innerText =
+        countTotal;
 
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td style="color:#00c6ff; font-weight:bold;">${student.id}</td>
-                    <td><strong>${student.name}</strong></td>
-                    <td>${student.program}</td>
-                  <td>
-    <span class="count-circle" style="${isFlagged ? 'background:#e74c3c' : ''}">
-        ${count}
-    </span>
-</td>
+    document.getElementById("stat1st").innerText =
+        count1st;
 
-<td style="font-size: 0.9rem;">
-    ${offense}
-</td>
+    document.getElementById("stat2nd").innerText =
+        count2nd;
 
-<td>
-    ${isFlagged 
-        ? `<span class="flagged-status">Flagged</span>` 
-        : `<span class="pending-status">Pending</span>`}
-</td>
-                    <td>
-                        <button onclick='viewDetails(${JSON.stringify(student.logs.map(l => ({
-                            date: l.dateString,
-                            time: l.timeString,
-                            img: l.capturedImage,
-                            type: l.violationType
-                        }))).replace(/'/g, "&apos;")}, "${student.name}")' 
-                        style="background:#2d2b6f; border:1px solid #00c6ff; color:white; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:600;">
-                            View Details
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+    document.getElementById("stat3rd").innerText =
+        count3rd;
+
+    document.getElementById("statNeeds").innerText =
+        countNeeds;
+
+    document.getElementById("statCounseled").innerText =
+        countCounseled;
+
+
+    /*
+     * ANALYTICS
+     */
+
+    renderProgramSummary(programCounts);
+
+    renderTrendChart();
+
+
+    /*
+     * TABLE FILTER
+     */
+
+    let filteredStudents =
+        processedStudents.filter(student => {
+
+            const matchesSearch =
+                !searchFilter ||
+                student.id
+                    .toLowerCase()
+                    .includes(searchFilter) ||
+                student.name
+                    .toLowerCase()
+                    .includes(searchFilter) ||
+                student.program
+                    .toLowerCase()
+                    .includes(searchFilter);
+
+
+            const matchesProgram =
+                selectedProgram === "all" ||
+                student.program
+                    .toLowerCase()
+                    .includes(
+                        selectedProgram.toLowerCase()
+                    );
+
+
+            const matchesYear =
+                selectedYear === "all" ||
+                student.year
+                    .toLowerCase() ===
+                selectedYear.toLowerCase();
+
+
+         const matchesDateAndType =
+    student.logs.some(log => {
+
+        const timestamp =
+            log.timestamp?.toDate?.();
+
+        if(!timestamp){
+            return false;
+        }
+
+        if(
+            dateFrom &&
+            timestamp < new Date(dateFrom + "T00:00:00")
+        ){
+            return false;
+        }
+
+        if(
+            dateTo &&
+            timestamp > new Date(dateTo + "23:59:59")
+        ){
+            return false;
+        }
+
+        return true;
+
+    });
+
+
+            let matchesQuick = true;
+
+
+            if(activeQuickFilter === "needs"){
+
+                matchesQuick =
+                    student.activeCount > 0 &&
+                    !student.isCounseled;
+
             }
-               }
-    }
+            else if(activeQuickFilter === "counseled"){
 
-    window.viewDetails = (logs, name) => {
-        const modal = document.getElementById("imageModal");
-        const container = document.getElementById("modalContent");
+                matchesQuick =
+                    student.isCounseled;
 
-        let html = `
-            <div style="margin-bottom:30px;">
-                <h2 style="color:white; margin-bottom:5px;">Violation History</h2>
-                <p style="color:#00c6ff; font-weight:bold;">${name}</p>
-                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
-            </div>
+            }
+            else if(activeQuickFilter === "3rd"){
+
+                matchesQuick =
+                    student.activeCount >= 3;
+
+            }
+
+
+            return (
+                matchesSearch &&
+                matchesProgram &&
+                matchesYear &&
+                matchesDateAndType &&
+                matchesQuick
+            );
+
+        });
+
+
+    /*
+     * SORT
+     */
+
+    filteredStudents.sort((a,b) => {
+
+        if(sortOption === "newest"){
+            return b.latestTime - a.latestTime;
+        }
+
+        if(sortOption === "oldest"){
+            return a.latestTime - b.latestTime;
+        }
+
+        if(sortOption === "highest"){
+            return b.activeCount - a.activeCount;
+        }
+
+        if(sortOption === "name"){
+            return a.name.localeCompare(b.name);
+        }
+
+        if(sortOption === "program"){
+            return a.program.localeCompare(b.program);
+        }
+
+        return 0;
+    });
+
+
+    /*
+     * NO DATA
+     */
+
+    if(filteredStudents.length === 0){
+
+        tbody.innerHTML = `
+            <tr id="noViolationsMessage">
+
+                <td
+                    colspan="8"
+                    style="text-align:center;padding:40px;color:#777"
+                >
+
+                    <h3 style="margin:0">
+                        No violations found
+                    </h3>
+
+                </td>
+
+            </tr>
         `;
-        
-logs
-.sort((a, b) => new Date(b.date) - new Date(a.date))
-.forEach(log => {
-            html += `
-                <div class="history-card">
-                    <img src="${log.img || 'https://via.placeholder.com/80'}" class="history-img" onclick="zoomImage('${log.img}')">
-                    <div class="history-info">
-                        <div style="color:#f1c40f; font-weight:bold;">${log.type}</div>
-                        <div style="font-size:0.9rem; margin-top:5px; opacity:0.8;">${log.date} | ${log.time}</div>
-                    </div>
-                </div>
-            `;
+
+        return;
+    }
+
+
+    /*
+     * TABLE ROWS
+     */
+
+    filteredStudents.forEach(student => {
+
+        const count =
+            student.activeCount;
+
+        const isCounseled =
+            student.isCounseled;
+
+        const offense =
+            getOffenseCategory(count);
+
+
+        const tr =
+            document.createElement("tr");
+
+
+        tr.dataset.studentId =
+            String(student.id || "")
+            .toLowerCase();
+
+        tr.dataset.name =
+            String(student.name || "")
+            .toLowerCase();
+
+        tr.dataset.program =
+            String(student.program || "")
+            .toLowerCase();
+
+        tr.dataset.year =
+            String(student.year || "")
+            .toLowerCase();
+
+
+        tr.innerHTML = `
+
+            <td>
+
+                <img
+                    src="${student.photo}"
+                    alt="${escapeHtml(student.name)}"
+                    class="student-photo"
+                    onclick="zoomImage(this.src)"
+                    onerror="this.src='default.jpg'"
+                >
+
+            </td>
+
+
+            <td style="color:#00c6ff;font-weight:bold">
+                ${escapeHtml(student.id)}
+            </td>
+
+
+            <td>
+
+                <strong>
+                    ${escapeHtml(student.name)}
+                </strong>
+
+                ${
+                    student.isRecent
+                    ? '<span class="new-badge">NEW</span>'
+                    : ''
+                }
+
+            </td>
+
+
+            <td>
+                ${escapeHtml(student.program)}
+                -
+                ${escapeHtml(student.year)}
+            </td>
+
+
+            <td>
+
+                <span
+                    class="count-circle"
+                    style="${
+                        count >= 3
+                        ? "background:#e74c3c"
+                        : ""
+                    }"
+                    onclick="showStudentProfile('${escapeJs(student.id)}')"
+                    title="Click to view student violation history"
+                >
+                    ${count}
+                </span>
+
+            </td>
+
+
+            <td style="font-size:.9rem">
+                ${offense}
+            </td>
+
+
+            <td>
+
+                ${
+                    count === 0
+
+                    ? `
+                        <span class="counseled-status">
+                            No Active Violation
+                        </span>
+                    `
+
+                    : isCounseled
+
+                    ? `
+                        <span class="counseled-status">
+                            Counseled
+                        </span>
+                    `
+
+                    : `
+                        <span class="not-counseled-status">
+                            Not Yet Counseled
+                        </span>
+                    `
+                }
+
+            </td>
+
+
+            <td class="action-cell">
+
+                ${
+                    count > 0 && !isCounseled
+
+                    ? `
+                        <button
+                            onclick="markCounseled('${escapeJs(student.id)}')"
+                            style="
+                                background:#FFD400;
+                                border:1px solid #FFD400;
+                                color:#003A8F;
+                                padding:6px 12px;
+                                border-radius:4px;
+                                cursor:pointer;
+                                font-weight:600
+                            "
+                        >
+                            Mark as Counseled
+                        </button>
+                    `
+
+                    : ""
+                }
+
+
+                <button
+                    onclick="showStudentProfile('${escapeJs(student.id)}')"
+                    style="
+                        background:#2d2b6f;
+                        border:1px solid #00c6ff;
+                        color:white;
+                        padding:6px 12px;
+                        border-radius:4px;
+                        cursor:pointer;
+                        font-weight:600;
+                        margin-left:5px
+                    "
+                >
+                    View Details
+                </button>
+
+            </td>
+
+        `;
+
+
+        tbody.appendChild(tr);
+
+    });
+
+}
+
+
+/* 7-DAY TREND */
+
+function renderTrendChart(){
+
+    const container =
+        document.getElementById("trendChart");
+
+    container.innerHTML = "";
+
+
+    const days = [];
+
+
+    for(let i = 6; i >= 0; i--){
+
+        const d = new Date();
+
+        d.setDate(
+            d.getDate() - i
+        );
+
+
+        days.push({
+
+            dateStr:
+                d.toISOString()
+                .split("T")[0],
+
+            label:
+                d.toLocaleDateString(
+                    "en-US",
+                    {weekday:"short"}
+                ),
+
+            count:0
         });
-        
-        container.innerHTML = html;
-        modal.style.display = "block";
-        document.body.style.overflow = "hidden"; 
+
     }
 
-    window.closeModal = () => {
-        document.getElementById("imageModal").style.display = "none";
-        document.body.style.overflow = "auto";
+
+    allRecords.forEach(rec => {
+
+        if(!rec.timestamp?.toDate){
+            return;
+        }
+
+
+        const recDate =
+            rec.timestamp.toDate();
+
+
+        const dateStr =
+            recDate.toISOString()
+            .split("T")[0];
+
+
+        const match =
+            days.find(
+                d => d.dateStr === dateStr
+            );
+
+
+        if(
+            match &&
+            rec.violationType &&
+            rec.violationType !== "None"
+        ){
+
+            match.count++;
+        }
+
+    });
+
+
+    const maxCount =
+        Math.max(
+            ...days.map(d => d.count),
+            1
+        );
+
+
+    days.forEach(d => {
+
+        const pct =
+            (d.count / maxCount) * 100;
+
+
+        container.innerHTML += `
+
+            <div
+                class="chart-bar-wrapper"
+                title="${d.count} violations on ${d.dateStr}"
+            >
+
+                <div
+                    style="
+                        font-size:.65rem;
+                        color:#003A8F;
+                        margin-bottom:2px
+                    "
+                >
+                    ${d.count}
+                </div>
+
+                <div
+                    class="chart-bar"
+                    style="height:${pct}%"
+                ></div>
+
+                <div class="chart-label">
+                    ${d.label}
+                </div>
+
+            </div>
+
+        `;
+
+    });
+
+}
+
+
+/* PROGRAM SUMMARY */
+
+function renderProgramSummary(counts){
+
+    const tbody =
+        document.getElementById(
+            "programSummaryBody"
+        );
+
+    tbody.innerHTML = "";
+
+
+    const sorted =
+        Object.entries(counts)
+        .sort((a,b) => b[1] - a[1]);
+
+
+    if(sorted.length === 0){
+
+        tbody.innerHTML = `
+            <tr>
+
+                <td
+                    colspan="2"
+                    style="color:#aaa"
+                >
+                    No data available
+                </td>
+
+            </tr>
+        `;
+
+        return;
     }
 
-    window.zoomImage = (src) => {
-        const zoomModal = document.getElementById("zoomModal");
-        const zoomedImg = document.getElementById("zoomedImg");
-        zoomedImg.src = src;
-        zoomModal.style.display = "flex";
+
+    sorted.forEach(([program,count]) => {
+
+        tbody.innerHTML += `
+
+            <tr>
+
+                <td>
+                    <strong>
+                        ${escapeHtml(program)}
+                    </strong>
+                </td>
+
+                <td>
+                    <span
+                        style="color:#003A8F;font-weight:bold"
+                    >
+                        ${count}
+                    </span>
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+}
+
+
+/*
+ * MARK COUNSELED
+ *
+ * 1st = count stays 1
+ * 2nd = count stays 2
+ * 3rd = count resets to 0
+ *
+ * counseledAt ONLY on 3rd offense.
+ */
+
+window.markCounseled = async id => {
+
+    const result =
+        await Swal.fire({
+
+            title:"Confirm Counseling",
+
+            input:"textarea",
+
+            inputLabel:
+                `Counseling Notes for Student ID: ${id}`,
+
+            inputPlaceholder:
+                "Type notes here (e.g., Reminded student about dress code policy)...",
+
+            inputAttributes:{
+                "aria-label":
+                    "Type counseling notes here"
+            },
+
+            showCancelButton:true,
+
+            confirmButtonText:
+                "Save Counseling Record",
+
+            cancelButtonText:
+                "Cancel",
+
+            confirmButtonColor:
+                "#003A8F",
+
+            cancelButtonColor:
+                "#6c757d",
+
+            reverseButtons:true
+
+        });
+
+
+    if(!result.isConfirmed){
+        return;
     }
 
-    document.getElementById("studentSearch").addEventListener("input", renderViolations);
-    function getOffenseCategory(count) {
-    if (count === 0) {
+
+    try{
+
+        const q =
+            query(
+                collection(db,"attendance"),
+                where("studentId","==",id)
+            );
+
+
+        const snapshot =
+            await getDocs(q);
+
+
+        const violationRecords =
+            snapshot.docs.filter(docSnap => {
+
+                const data =
+                    docSnap.data();
+
+                return (
+                    data.violationType &&
+                    data.violationType !== "None"
+                );
+
+            });
+
+
+        /*
+         * FIND LAST 3RD-OFFENSE RESET
+         */
+
+        const resetDates =
+            violationRecords
+                .map(docSnap => {
+
+                    const data =
+                        docSnap.data();
+
+                    return data.counseledAt
+                        ? new Date(data.counseledAt)
+                        : null;
+
+                })
+                .filter(date =>
+                    date &&
+                    !isNaN(date.getTime())
+                )
+                .sort((a,b) => b-a);
+
+
+        const lastResetDate =
+            resetDates[0] || null;
+
+
+        /*
+         * GET ACTIVE RECORDS
+         */
+
+        const activeRecords =
+            violationRecords
+                .filter(docSnap => {
+
+                    const data =
+                        docSnap.data();
+
+
+                    if(!lastResetDate){
+                        return true;
+                    }
+
+
+                    const timestamp =
+                        data.timestamp?.toDate?.();
+
+
+                    return (
+                        timestamp &&
+                        timestamp > lastResetDate
+                    );
+
+                })
+                .sort((a,b) => {
+
+                    const dateA =
+                        a.data()
+                        .timestamp?.toDate?.() ||
+                        new Date(0);
+
+                    const dateB =
+                        b.data()
+                        .timestamp?.toDate?.() ||
+                        new Date(0);
+
+                    return dateA - dateB;
+
+                });
+
+
+        const activeCount =
+            activeRecords.length;
+
+
+        if(activeCount === 0){
+
+            await Swal.fire({
+
+                title:"No Active Violation",
+
+                text:
+                    "There is no active violation to counsel.",
+
+                icon:"info",
+
+                confirmButtonColor:"#003A8F"
+
+            });
+
+            return;
+        }
+
+
+        const now =
+            new Date().toISOString();
+
+
+        const latestRecord =
+            activeRecords[
+                activeRecords.length - 1
+            ];
+
+
+        const notes =
+            result.value &&
+            result.value.trim() !== ""
+
+            ? result.value.trim()
+
+            : "No notes provided.";
+
+
+        /*
+         * 1ST / 2ND OFFENSE
+         *
+         * NO counseledAt.
+         *
+         * Count remains active.
+         */
+
+ if(activeCount < 3){ 
+ 
+    await updateDoc( 
+        latestRecord.ref, 
+        { 
+            counselingStatus: "Counseled", 
+            lastCounseledAt: now, 
+            counselingNotes: notes 
+        } 
+    ); 
+ 
+    const localRecord = allRecords.find( 
+        record => record.id === latestRecord.id 
+    ); 
+ 
+    if(localRecord){ 
+        localRecord.counselingStatus = "Counseled"; 
+        localRecord.lastCounseledAt = now; 
+        localRecord.counselingNotes = notes; 
+    } 
+ 
+    await Swal.fire({ 
+ 
+        title:"Counseling Recorded", 
+ 
+        text: 
+            `The ${ 
+                activeCount === 1 
+                ? "1st" 
+                : "2nd" 
+            } offense has been marked as counseled. The violation count remains ${activeCount}.`, 
+ 
+        icon:"success", 
+ 
+        confirmButtonText:"OK", 
+ 
+        confirmButtonColor:"#003A8F" 
+ 
+    }); 
+ 
+    renderViolations(); 
+ 
+    return; 
+}
+
+        /*
+         * 3RD OFFENSE
+         *
+         * Add counseledAt.
+         * This resets active count to 0.
+         */
+
+        await updateDoc(
+            latestRecord.ref,
+            {
+                counselingStatus:"Counseled",
+                lastCounseledAt:now,
+                counseledAt:now,
+                counselingNotes:notes
+            }
+        );
+
+
+        await Swal.fire({
+
+            title:"3rd Offense Counseled",
+
+            text:
+                "The 3rd offense has been counseled. The active violation count has been reset to 0. The next violation will be counted as the 1st offense.",
+
+            icon:"success",
+
+            confirmButtonText:"OK",
+
+            confirmButtonColor:"#003A8F"
+
+        });
+
+
+        renderViolations();
+
+
+    }catch(error){
+
+        console.error(
+            "Error marking student as counseled:",
+            error
+        );
+
+
+        await Swal.fire({
+
+            title:"Something Went Wrong",
+
+            text:
+                "Failed to record counseling. Please try again.",
+
+            icon:"error",
+
+            confirmButtonText:"OK",
+
+            confirmButtonColor:"#003A8F"
+
+        });
+
+    }
+
+};
+
+
+/*
+ * STUDENT PROFILE / VIOLATION HISTORY
+ */
+
+window.showStudentProfile = studentId => {
+
+    const profile =
+        studentProfiles[studentId] || {};
+
+
+    const logs =
+        allRecords
+            .filter(r =>
+                r.studentId === studentId &&
+                r.violationType &&
+                r.violationType !== "None"
+            )
+            .sort((a,b) => {
+
+                const dateA =
+                    a.timestamp?.toDate?.() ||
+                    new Date(0);
+
+                const dateB =
+                    b.timestamp?.toDate?.() ||
+                    new Date(0);
+
+                return dateB - dateA;
+
+            });
+
+
+    const modal =
+        document.getElementById(
+            "imageModal"
+        );
+
+
+    const container =
+        document.getElementById(
+            "modalContent"
+        );
+
+
+    const studentName =
+        profile.fullName ||
+        logs[0]?.studentName ||
+        "Unknown Student";
+
+
+    const program =
+        profile.course ||
+        logs[0]?.programLevel ||
+        "N/A";
+
+
+    const year =
+        profile.yearLevel ||
+        logs[0]?.yearLevel ||
+        "N/A";
+
+
+    const photo =
+        profile.imageBase64 ||
+        "default.jpg";
+
+
+    /*
+     * ACTIVE COUNT
+     */
+
+    const resetDates =
+        logs
+            .map(log =>
+                log.counseledAt
+                    ? new Date(log.counseledAt)
+                    : null
+            )
+            .filter(date =>
+                date &&
+                !isNaN(date.getTime())
+            )
+            .sort((a,b) => b-a);
+
+
+    const lastResetDate =
+        resetDates[0] || null;
+
+
+    const activeLogs =
+        logs.filter(log => {
+
+            if(!lastResetDate){
+                return true;
+            }
+
+            const timestamp =
+                log.timestamp?.toDate?.();
+
+
+            return (
+                timestamp &&
+                timestamp > lastResetDate
+            );
+
+        });
+
+
+    const activeCount =
+        activeLogs.length;
+
+
+    const offense =
+        getOffenseCategory(
+            activeCount
+        );
+
+
+    let html = `
+
+        <div
+            style="
+                background:#fff;
+                border-radius:12px;
+                padding:25px;
+                color:#333;
+                box-shadow:0 10px 25px rgba(0,0,0,.3)
+            "
+        >
+
+            <div class="profile-header">
+
+                <img
+                    src="${photo}"
+                    class="profile-photo"
+                    onerror="this.src='default.jpg'"
+                >
+
+                <div>
+
+                    <h2 class="profile-name">
+                        ${escapeHtml(studentName)}
+                    </h2>
+
+                    <p class="profile-info">
+
+                        <strong>ID:</strong>
+                        ${escapeHtml(studentId)}
+
+                        |
+
+                        <strong>Program:</strong>
+                        ${escapeHtml(program)}
+
+                        -
+                        ${escapeHtml(year)}
+
+                    </p>
+
+                    <span class="profile-badge">
+                        Active Violations: ${activeCount}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div
+                style="
+                    background:#f8f9fa;
+                    border:1px solid #e9ecef;
+                    padding:12px;
+                    border-radius:8px;
+                    margin-bottom:20px
+                "
+            >
+
+                <strong style="color:#003A8F">
+                    Current Offense:
+                </strong>
+
+                <span style="margin-left:5px">
+                    ${offense}
+                </span>
+
+            </div>
+
+
+            <h3
+                style="
+                    color:#003A8F;
+                    margin-bottom:10px
+                "
+            >
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Violation & Counseling History
+            </h3>
+
+
+            <div class="history-scroll">
+
+    `;
+
+
+    if(logs.length === 0){
+
+        html += `
+            <p style="color:#777">
+                No recorded violations for this student.
+            </p>
+        `;
+
+    }else{
+
+        logs.forEach(log => {
+
+            const timestamp =
+                log.timestamp?.toDate?.();
+
+
+            const logDate =
+                log.dateString ||
+                (
+                    timestamp
+                    ? timestamp.toLocaleDateString()
+                    : "N/A"
+                );
+
+
+            const logTime =
+                log.timeString ||
+                (
+                    timestamp
+                    ? timestamp.toLocaleTimeString()
+                    : ""
+                );
+
+
+            const wasReset =
+                !!log.counseledAt;
+
+
+            const notes =
+                log.counselingNotes;
+
+
+            const image =
+                log.capturedImage ||
+                "default.jpg";
+
+
+            const isCounseled =
+                log.counselingStatus ===
+                "Counseled";
+
+
+            html += `
+
+                <div
+                    class="history-card"
+                    style="
+                        border-left:5px solid ${
+                            isCounseled
+                            ? "#2ecc71"
+                            : "#e74c3c"
+                        };
+                        position:relative
+                    "
+                >
+
+                    <img
+                        src="${image}"
+                        class="history-img"
+                        onclick="zoomImage(this.src)"
+                        onerror="this.src='default.jpg'"
+                    >
+
+
+                    <div class="history-info">
+
+                        <div
+                            style="
+                                display:flex;
+                                justify-content:space-between;
+                                align-items:center;
+                                gap:10px
+                            "
+                        >
+
+                            <strong
+                                style="
+                                    color:#e74c3c;
+                                    font-size:1rem
+                                "
+                            >
+                                ${escapeHtml(
+                                    log.violationType ||
+                                    "Violation"
+                                )}
+                            </strong>
+
+
+                            <span
+                                class="
+                                    history-status
+                                    ${
+                                        isCounseled
+                                        ? "counseled"
+                                        : "pending"
+                                    }
+                                "
+                            >
+                                ${
+                                    log.counselingStatus ||
+                                    "Not Counseled"
+                                }
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            style="
+                                font-size:.85rem;
+                                color:#666;
+                                margin-top:4px
+                            "
+                        >
+
+                            <i class="fa-regular fa-calendar"></i>
+
+                            ${escapeHtml(logDate)}
+
+                            ${escapeHtml(logTime)}
+
+                        </div>
+
+
+                        ${
+                            notes
+                            ? `
+                                <div class="history-note">
+                                    <strong>Note:</strong>
+                                    ${escapeHtml(notes)}
+                                </div>
+                            `
+                            : ""
+                        }
+
+
+                        ${
+                            wasReset
+                            ? `
+                                <div class="reset-note">
+
+                                    <i class="fa-solid fa-rotate-left"></i>
+
+                                    Violation count was reset after this offense
+
+                                </div>
+                            `
+                            : ""
+                        }
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+    }
+
+
+    html += `
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    container.innerHTML = html;
+
+
+    modal.style.display = "block";
+
+    document.body.style.overflow = "hidden";
+
+};
+
+
+/* CLOSE MODAL */
+
+window.closeModal = () => {
+
+    document.getElementById(
+        "imageModal"
+    ).style.display = "none";
+
+    document.body.style.overflow = "auto";
+
+};
+
+
+/* ZOOM IMAGE */
+
+window.zoomImage = src => {
+
+    const zoomModal =
+        document.getElementById(
+            "zoomModal"
+        );
+
+
+    const zoomedImg =
+        document.getElementById(
+            "zoomedImg"
+        );
+
+
+    zoomedImg.src = src;
+
+    zoomModal.style.display = "flex";
+
+};
+
+
+/*
+ * EXPORT CSV
+ */
+
+window.exportToCSV = () => {
+
+    const rows =
+        document.querySelectorAll(
+            "#violationTableBody tr"
+        );
+
+
+    const csv = [
+
+        [
+            "Student ID",
+            "Name",
+            "Program & Year",
+            "Active Offense Count",
+            "Offense Category",
+            "Counseling Status"
+        ].join(",")
+
+    ];
+
+
+    rows.forEach(row => {
+
+        if(
+            row.id ===
+            "noViolationsMessage"
+        ){
+            return;
+        }
+
+
+        const cols =
+            row.querySelectorAll("td");
+
+
+        if(cols.length < 7){
+            return;
+        }
+
+
+        const values = [
+
+            cols[1].innerText.trim(),
+
+            cols[2].innerText
+                .replace("NEW","")
+                .trim(),
+
+            cols[3].innerText.trim(),
+
+            cols[4].innerText.trim(),
+
+            cols[5].innerText.trim(),
+
+            cols[6].innerText.trim()
+
+        ];
+
+
+        csv.push(
+            values
+                .map(value =>
+                    `"${value.replace(/"/g,'""')}"`
+                )
+                .join(",")
+        );
+
+    });
+
+
+    const blob =
+        new Blob(
+            [csv.join("\n")],
+            {type:"text/csv;charset=utf-8;"}
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement("a");
+
+
+    link.href = url;
+
+
+    link.download =
+        `UniScan_Violation_Report_${
+            new Date()
+            .toISOString()
+            .split("T")[0]
+        }.csv`;
+
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+};
+
+
+/*
+ * ORIGINAL OFFENSE TEXT
+ *
+ * RESTORED FROM YOUR OLD VERSION
+ */
+
+function getOffenseCategory(count){
+
+    if(count === 0){
+
         return "No Record";
+
     }
 
-    if (count === 1) {
+
+    if(count === 1){
+
         return "1st Offense - Verbal Warning (spoken reminder)";
+
     }
 
-    if (count === 2) {
+
+    if(count === 2){
+
         return "2nd Offense - Written Reprimand (formal written warning)";
+
     }
+
 
     return "3rd Offense - Written Reprimand / Corrective Action (suspension for at least 3 school days and up to 7 school days)";
+
+}
+
+/*
+ * HTML SAFETY HELPERS
+ */
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+function escapeJs(value){
+
+    return String(value ?? "")
+        .replace(/\\/g,"\\\\")
+        .replace(/'/g,"\\'");
+
 }
 </script>
 </body>

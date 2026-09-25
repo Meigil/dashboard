@@ -740,3 +740,293 @@ select {
 .search-input {
   color: #000 !important;
 }
+.filter-box > div:first-child{
+    width:100%;
+    display:grid!important;
+    grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)!important;
+    gap:10px!important;
+}
+
+.filter-box .extra-filter-row{
+    width:100%;
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:10px!important;
+}/* =========================================
+   STUDENTS TABLE - EDIT / DELETE BUTTONS
+   ========================================= */
+
+.students-page table td:last-child {
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+/* EDIT BUTTON */
+.students-page .edit-btn {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    background: #003A8F !important;
+    color: #FFFFFF !important;
+
+    border: 1px solid #003A8F !important;
+    border-radius: 7px !important;
+
+    padding: 7px 14px !important;
+    min-width: 62px !important;
+    height: 34px !important;
+
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin: 0 3px !important;
+
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 5px rgba(0, 58, 143, 0.12) !important;
+}
+
+.students-page .edit-btn:hover {
+    background: #002F75 !important;
+    border-color: #002F75 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 9px rgba(0, 58, 143, 0.20) !important;
+}
+
+.students-page .edit-btn:active {
+    transform: translateY(0) !important;
+    box-shadow: none !important;
+}
+
+
+/* DELETE BUTTON */
+.students-page .delete-btn {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    background: #DC3545 !important;
+    color: #FFFFFF !important;
+
+    border: 1px solid #DC3545 !important;
+    border-radius: 7px !important;
+
+    padding: 7px 14px !important;
+    min-width: 62px !important;
+    height: 34px !important;
+
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin: 0 3px !important;
+
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 5px rgba(220, 53, 69, 0.12) !important;
+}
+
+.students-page .delete-btn:hover {
+    background: #C82333 !important;
+    border-color: #C82333 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 9px rgba(220, 53, 69, 0.20) !important;
+}
+
+.students-page .delete-btn:active {
+    transform: translateY(0) !important;
+    box-shadow: none !important;
+}
+
+
+/* MOBILE */
+@media (max-width: 600px) {
+    .students-page .edit-btn,
+    .students-page .delete-btn {
+        min-width: 58px !important;
+        height: 32px !important;
+        padding: 6px 11px !important;
+        font-size: 12px !important;
+    }
+}/* =========================
+   STUDENTS TABLE
+   ========================= */
+
+.students-page table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Photo column */
+.students-page table td img {
+    width: 52px !important;
+    height: 52px !important;
+    object-fit: cover !important;
+   border: 2px solid #FFC107 !important;
+    border-radius: 8px !important;
+    padding: 2px !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    margin: 0 auto !important;
+}
+
+/* Photo cell */
+.students-page table td:first-child {
+    width: 80px;
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+/* Action column */
+.students-page table td:last-child {
+    text-align: center !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+    width: 150px !important;
+    min-width: 150px !important;
+}
+
+/* Keep Edit + Delete together */
+.students-page table td:last-child .edit-btn,
+.students-page table td:last-child .delete-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
+    width: 65px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    margin: 0 2px !important;
+    border-radius: 7px !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Edit */
+.students-page table td:last-child .edit-btn {
+    background: #003A8F !important;
+    color: #ffffff !important;
+    border: 1px solid #003A8F !important;
+}
+
+.students-page table td:last-child .edit-btn:hover {
+    background: #002F75 !important;
+    border-color: #002F75 !important;
+    transform: translateY(-1px);
+}
+
+/* Delete */
+.students-page table td:last-child .delete-btn {
+    background: #DC3545 !important;
+    color: #ffffff !important;
+    border: 1px solid #DC3545 !important;
+}
+
+.students-page table td:last-child .delete-btn:hover {
+    background: #C82333 !important;
+    border-color: #C82333 !important;
+    transform: translateY(-1px);
+}
+
+/* Prevent buttons from spreading apart */
+.students-page table td:last-child {
+    font-size: 0 !important;
+}
+
+.students-page table td:last-child .edit-btn,
+.students-page table td:last-child .delete-btn {
+    font-size: 13px !important;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .students-page table td:last-child {
+        width: 135px !important;
+        min-width: 135px !important;
+    }
+
+    .students-page table td:last-child .edit-btn,
+    .students-page table td:last-child .delete-btn {
+        width: 58px !important;
+        height: 32px !important;
+        font-size: 12px !important;
+        margin: 0 1px !important;
+    }
+
+    .students-page table td img {
+        width: 46px !important;
+        height: 46px !important;
+    }
+}/* =========================================
+   PC / DESKTOP FILTERS
+   ========================================= */
+
+@media (min-width: 1101px) {
+
+    .filter-box {
+        width: 100%;
+        padding: 18px !important;
+        box-sizing: border-box;
+    }
+
+    /* Search + Date */
+    .filter-box > div:first-child {
+        display: grid !important;
+        grid-template-columns: 1.4fr 1fr !important;
+        gap: 30px !important;
+        align-items: end !important;
+        margin-bottom: 28px !important;
+    }
+
+    /* Search */
+    .filter-box .search-box {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* Date */
+    .filter-box .date-range {
+        display: grid !important;
+        grid-template-columns: 1fr auto 1fr !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+
+    /* Program / Year / Sort */
+    .filter-box .extra-filter-row {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 30px !important;
+        width: 100% !important;
+    }
+
+    .filter-box .filter-group {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .filter-box .filter-group label {
+        display: block !important;
+        margin-bottom: 8px !important;
+        white-space: nowrap !important;
+    }
+
+    .filter-box .filter {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}

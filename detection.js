@@ -32,9 +32,32 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app); 
 const db = getFirestore(app);
 
+let washDays = [];
 
-const ROBOFLOW_API_KEY = "4WcRW9pEUuwig5Fg62Nd"; 
-const ROBOFLOW_MODEL = "neww-owbun/4"; 
+async function loadWashdaysFromFirebase() {
+    try {
+        const washdayRef = doc(db, "settings", "washday");
+        const washdaySnap = await getDoc(washdayRef);
+
+        if (washdaySnap.exists()) {
+            const data = washdaySnap.data();
+
+            washDays = Array.isArray(data.days)
+                ? data.days
+                : [];
+        } else {
+            washDays = [];
+        }
+
+        console.log("Washdays loaded from Firebase:", washDays);
+
+    } catch (error) {
+        console.error("Error loading washday schedule:", error);
+        washDays = [];
+    }
+}
+const ROBOFLOW_API_KEY = "mzaT9YUfDeKnPs3BpM0S"; 
+const ROBOFLOW_MODEL = "meigilverzys-workspace-l1ik1/uniscanlastnasanato-1-rfdetr-nano-t1"; 
 
 const ROBOFLOW_URL = `https://detect.roboflow.com/${ROBOFLOW_MODEL}?api_key=${ROBOFLOW_API_KEY}`;
 
@@ -143,19 +166,14 @@ function evaluateUniform(detectedParts, program) {
     };
 } 
 
-let washDays = [];
 
-function loadWashdaysFromLocal() {
-    const saved = JSON.parse(localStorage.getItem("washdays") || "[]");
-    washDays = saved;
-}
 
 function isTodayWashday() {
     const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
     return washDays.includes(today);
 }
 
-loadWashdaysFromLocal();
+await loadWashdaysFromFirebase();
 Promise.all([
     faceapi.nets.ssdMobilenetv1.loadFromUri("./models"),
     faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
@@ -287,7 +305,7 @@ const detectedParts = [];
 if (roboflowRes.predictions) {
     roboflowRes.predictions.forEach(async (pred) => {
 
-        if (pred.confidence < 0.90) return;
+        if (pred.confidence < 0.50) return;
 
         if (isTodayWashday()) {
             const allowedLanyards = [
