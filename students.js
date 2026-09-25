@@ -9,7 +9,9 @@ import {
   query,
   orderBy,
   onSnapshot,
-  getDoc
+  getDoc,
+  getDocs,
+where
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 import {
@@ -263,7 +265,6 @@ function openEditModal(student) {
 window.closeEditModal = () => {
   document.getElementById("editStudentModal").style.display = "none";
 };
-
 document.getElementById("saveEditBtn").onclick = async () => {
   const oldDocId = document.getElementById("editDocId").value;
   const newStudentId = document.getElementById("editStudentId").value.trim();
@@ -271,23 +272,33 @@ document.getElementById("saveEditBtn").onclick = async () => {
   const middleName = document.getElementById("editMiddleName").value.trim();
   const lastName = document.getElementById("editLastName").value.trim();
   const suffix = document.getElementById("editSuffix").value.trim();
-  const fullName = [firstName, middleName, lastName, suffix].filter(Boolean).join(" ");
+
+  const fullName = [firstName, middleName, lastName, suffix]
+    .filter(Boolean)
+    .join(" ");
 
   if (!newStudentId || !firstName || !lastName) {
     Swal.fire({
-      icon: 'warning',
-      title: 'Incomplete Details',
-      text: 'Please fill out Student ID, First Name, and Last Name.',
-      confirmButtonColor: '#003A8F'
+      icon: "warning",
+      title: "Incomplete Details",
+      text: "Please fill out Student ID, First Name, and Last Name.",
+      confirmButtonColor: "#003A8F"
     });
     return;
   }
 
   try {
-    const oldDocRef = doc(db, "students", oldDocId);
-    const oldSnap = await getDoc(oldDocRef);
-    const existingData = oldSnap.exists() ? oldSnap.data() : {};
+    // Get existing student
+    const oldStudentRef = doc(db, "students", oldDocId);
+    const oldStudentSnap = await getDoc(oldStudentRef);
 
+    if (!oldStudentSnap.exists()) {
+      throw new Error("Student profile not found.");
+    }
+
+    const existingData = oldStudentSnap.data();
+
+    // Updated student data
     const updatedPayload = {
       ...existingData,
       studentId: newStudentId,
@@ -298,29 +309,81 @@ document.getElementById("saveEditBtn").onclick = async () => {
       fullName
     };
 
+    // Find attendance records using old Student ID
+    const attendanceQuery = query(
+      collection(db, "attendance"),
+      where("studentId", "==", oldDocId)
+    );
+
+    const attendanceSnapshot = await getDocs(attendanceQuery);
+
+    // Create batch
+    const batch = writeBatch(db);
+
+    // Update student
     if (newStudentId !== oldDocId) {
-      await deleteDoc(oldDocRef);
-      await setDoc(doc(db, "students", newStudentId), updatedPayload);
+      batch.delete(oldStudentRef);
+
+      batch.set(
+        doc(db, "students", newStudentId),
+        updatedPayload
+      );
     } else {
-      await setDoc(oldDocRef, updatedPayload);
+      batch.set(
+        oldStudentRef,
+        updatedPayload
+      );
     }
 
+    // Update attendance records
+    attendanceSnapshot.forEach(attendanceDoc => {
+      const attendanceData = attendanceDoc.data();
+
+      batch.update(
+        doc(db, "attendance", attendanceDoc.id),
+        {
+          studentId: newStudentId,
+          studentName: fullName,
+
+          programLevel:
+            updatedPayload.course ||
+            attendanceData.programLevel ||
+            "",
+
+          yearLevel:
+            updatedPayload.yearLevel ||
+            attendanceData.yearLevel ||
+            ""
+        }
+      );
+    });
+
+    // Commit all changes
+    await batch.commit();
+
     closeEditModal();
+
     Swal.fire({
-      icon: 'success',
-      title: 'Updated!',
-      text: 'Student profile updated successfully.',
-      timer: 1500,
+      icon: "success",
+      title: "Updated!",
+      text: attendanceSnapshot.size > 0
+        ? `Student profile and ${attendanceSnapshot.size} attendance record(s) updated successfully.`
+        : "Student profile updated successfully.",
+      timer: 1800,
       showConfirmButton: false
     });
 
   } catch (error) {
-    console.error("Error updating student:", error);
+    console.error(
+      "Error updating student and attendance records:",
+      error
+    );
+
     Swal.fire({
-      icon: 'error',
-      title: 'Update Failed',
+      icon: "error",
+      title: "Update Failed",
       text: error.message,
-      confirmButtonColor: '#003A8F'
+      confirmButtonColor: "#003A8F"
     });
   }
 };
